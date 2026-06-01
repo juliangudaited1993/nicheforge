@@ -100,6 +100,9 @@ export default function LoginPage() {
             <p className="text-center text-[10px] text-[#52525b] mt-2">
               Creates a demo session. Full access to Grok research and PDF reports. Data saved locally.
             </p>
+            <p className="text-center text-[10px] text-amber-400/70 mt-1">
+              When you're ready for real accounts: Set Supabase keys in Netlify + run schema.sql
+            </p>
           </div>
 
           {/* Legacy Test Mode (keep for power users) */}

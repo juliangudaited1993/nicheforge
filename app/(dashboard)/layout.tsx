@@ -44,6 +44,13 @@ export default async function DashboardLayout({
             : "TEST MODE — Full access enabled • No login required • All features (research flow, agents, PDF, history) work locally"}
         </div>
       )}
+
+      {/* Helpful production readiness banner when in demo mode */}
+      {(hasDemoLogin || isDemoMode) && (
+        <div className="absolute top-6 left-1/2 -translate-x-1/2 z-[60] bg-black/80 text-white text-xs px-4 py-1.5 rounded-full border border-white/20">
+          Want real user accounts + saved history? Set up Supabase keys in Netlify + run supabase/schema.sql
+        </div>
+      )}
       <DashboardSidebar user={displayUser} />
       <div className="flex flex-1 flex-col overflow-hidden">
         <DashboardTopbar user={displayUser} />
