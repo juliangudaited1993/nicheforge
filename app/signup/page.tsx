@@ -40,13 +40,13 @@ export default function SignupPage() {
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#f59e0b] to-[#b45309] flex items-center justify-center">
               <Flame className="w-5 h-5 text-black" />
             </div>
-            <span className="font-semibold text-2xl tracking-tighter">NicheForge AI</span>
+            <span className="font-semibold text-2xl tracking-tighter">ResearchForge</span>
           </div>
         </div>
 
         <div className="card rounded-3xl p-8">
           <h1 className="text-2xl font-semibold tracking-tight mb-1">Create your account</h1>
-          <p className="text-[#a1a1aa] mb-6">Start generating professional niche reports today.</p>
+          <p className="text-[#a1a1aa] mb-6">Start generating professional research reports on any topic.</p>
 
           <form onSubmit={handleSignup} className="space-y-4">
             <input
@@ -78,6 +78,19 @@ export default function SignupPage() {
             Already have an account?{' '}
             <Link href="/login" className="text-[#f59e0b] hover:underline">Log in</Link>
           </p>
+
+          {/* Easy Test Mode bypass for local testing */}
+          <div className="mt-6 pt-6 border-t border-[#27272a] text-center">
+            <button
+              onClick={() => {
+                document.cookie = "researchforge-test-mode=true; path=/; max-age=86400";
+                window.location.href = "/new-report?test=true";
+              }}
+              className="text-sm text-emerald-400 hover:text-emerald-300 underline"
+            >
+              Skip signup → Enter Full Test Mode (recommended for review)
+            </button>
+          </div>
         </div>
       </div>
     </div>

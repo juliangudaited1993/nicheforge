@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { generateGrokReport } from '@/lib/grok';
 import { NicheReport } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
+import { cookies } from 'next/headers';
 
 export async function generateAndSaveReport(
   topic: string,
@@ -19,7 +20,12 @@ export async function generateAndSaveReport(
       data: { user },
     } = await supabase.auth.getUser();
 
-    const isDemoMode = !process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const cookieStore = await cookies();
+    const isTestMode = cookieStore.get('researchforge-test-mode')?.value === 'true';
+
+    // Fully functional Test Mode: always treat as demo when the test cookie is present,
+    // or when no Supabase is configured at all.
+    const isDemoMode = !process.env.NEXT_PUBLIC_SUPABASE_URL || isTestMode;
 
     if (!user && !isDemoMode) {
       return { success: false, error: 'You must be logged in to generate reports.' };
@@ -31,12 +37,16 @@ export async function generateAndSaveReport(
     const reportData = await generateGrokReport(topic, depth, customInstructions || '', researchStyle, reportLength);
 
     if (isDemoMode) {
-      // Demo mode: return the report without saving or quota checks
+      // Pure Test Mode / no Supabase: return rich demo report.
+      // Actual persistence to history happens client-side in new-report page (localStorage).
       const demoReport: NicheReport = {
         ...reportData,
         id: 'demo-' + Date.now(),
         created_at: new Date().toISOString(),
+        researchStyle: researchStyle as any,
+        reportLength: reportLength as any,
       };
+
       return { success: true, report: demoReport };
     }
 
@@ -50,16 +60,21 @@ export async function generateAndSaveReport(
     const now = new Date();
     const trialEnd = profile?.trial_ends_at ? new Date(profile.trial_ends_at) : null;
     const isTrialActive = !!trialEnd && trialEnd > now;
-    const isPaid = profile?.subscription_tier === 'pro';
+    const tier = profile?.subscription_tier || 'free';
+    const isPaid = ['basic', 'pro', 'unlimited'].includes(tier);
 
-    // Determine effective limit
+    // Determine effective limit based on new pricing
     let effectiveLimit = profile?.report_quota_limit ?? 5;
     let isWithinTrial = false;
 
-    if (isPaid) {
+    if (tier === 'unlimited') {
       effectiveLimit = 9999;
+    } else if (tier === 'pro') {
+      effectiveLimit = 100;
+    } else if (tier === 'basic') {
+      effectiveLimit = 20;
     } else if (isTrialActive) {
-      effectiveLimit = 12; // 7-day trial with generous allowance
+      effectiveLimit = 12; // 7-day trial
       isWithinTrial = true;
     }
 
@@ -68,7 +83,7 @@ export async function generateAndSaveReport(
     if (used >= effectiveLimit) {
       const message = isWithinTrial
         ? `You've used all ${effectiveLimit} trial reports. Your 7-day trial ends soon — upgrade to continue.`
-        : `Monthly quota reached (${used}/${effectiveLimit}). Upgrade to Pro ($49/mo + setup fee) for unlimited reports.`;
+        : `Monthly quota reached (${used}/${effectiveLimit}). Upgrade to a higher plan for more reports.`;
       
       return { success: false, error: message };
     }
@@ -78,17 +93,23 @@ export async function generateAndSaveReport(
       .from('reports')
       .insert({
         user_id: user!.id,
-        niche: reportData.topic || reportData.niche, // support both for transition
-        topic: reportData.topic || reportData.niche,
+        topic: reportData.topic || reportData.niche || 'Research Topic',
+        niche: reportData.niche || reportData.topic || null, // legacy compat (can be null)
+        research_style: reportData.researchStyle || researchStyle || 'corporate',
+        report_length: reportData.reportLength || reportLength || 'medium',
         score: reportData.score,
         depth: reportData.depth,
         summary: reportData.summary,
         metrics: reportData.metrics,
         insights: reportData.insights,
-        competitors: reportData.competitors,
-        playbook: reportData.playbook,
-        related: reportData.related,
-        full_data: reportData,
+        competitors: reportData.competitors || [],
+        playbook: reportData.playbook || [],
+        related: reportData.related || [],
+        full_data: {
+          ...reportData,
+          researchStyle: researchStyle,
+          reportLength: reportLength,
+        },
       })
       .select()
       .single();
@@ -279,7 +300,8 @@ export async function getTrialStatus() {
 
   if (!profile) return { isDemo: false, isTrialActive: false, daysLeft: 0, used: 0, limit: 5 };
 
-  const isPaid = profile.subscription_tier === 'pro';
+  const tier = profile.subscription_tier || 'free';
+  const isPaid = ['basic', 'pro', 'unlimited'].includes(tier);
   const trialEnd = profile.trial_ends_at ? new Date(profile.trial_ends_at) : null;
   const now = new Date();
   const isTrialActive = !!trialEnd && trialEnd > now && !isPaid;
@@ -289,13 +311,15 @@ export async function getTrialStatus() {
     daysLeft = Math.max(0, Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 3600 * 24)));
   }
 
+  const limit = tier === 'unlimited' ? 9999 : (tier === 'pro' ? 100 : (tier === 'basic' ? 20 : (isTrialActive ? 12 : (profile.report_quota_limit || 5))));
+
   return {
     isDemo: false,
     isTrialActive,
     daysLeft,
     used: profile.report_quota_used || 0,
-    limit: isPaid ? 999 : (isTrialActive ? 12 : (profile.report_quota_limit || 5)),
-    tier: profile.subscription_tier || 'free',
+    limit,
+    tier,
   };
 }
 
@@ -305,7 +329,7 @@ export async function getTrialStatus() {
 
 import { getStripe, PRICES } from '@/lib/stripe';
 
-export async function createCheckoutSession(plan: 'pro') {
+export async function createCheckoutSession(plan: 'basic' | 'pro' | 'unlimited') {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -336,21 +360,23 @@ export async function createCheckoutSession(plan: 'pro') {
       .eq('id', user.id);
   }
 
-  // New hybrid model: One-time setup fee ($297-$497) + $49/month subscription
-  const setupPriceId = PRICES.setupFee;
-  const monthlyPriceId = PRICES.proMonthly;
+  // New pure monthly pricing
+  let monthlyPriceId: string;
+  let planName = plan;
 
-  if (!setupPriceId || !monthlyPriceId) {
+  if (plan === 'basic') {
+    monthlyPriceId = PRICES.basicMonthly;
+  } else if (plan === 'pro') {
+    monthlyPriceId = PRICES.proMonthly;
+  } else {
+    monthlyPriceId = PRICES.unlimitedMonthly;
+  }
+
+  if (!monthlyPriceId) {
     return { error: 'Payment configuration is incomplete. Please contact support or try again later.' };
   }
 
   const lineItems = [
-    // One-time setup fee
-    {
-      price: setupPriceId,
-      quantity: 1,
-    },
-    // Monthly recurring subscription
     {
       price: monthlyPriceId,
       quantity: 1,
@@ -366,12 +392,12 @@ export async function createCheckoutSession(plan: 'pro') {
     cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/pricing?canceled=true`,
     metadata: {
       supabase_user_id: user.id,
-      plan,
+      plan: planName,
     },
     subscription_data: {
       metadata: {
         supabase_user_id: user.id,
-        plan,
+        plan: planName,
       },
     },
   });

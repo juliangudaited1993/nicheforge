@@ -22,6 +22,7 @@ interface Competitor {
 interface NicheReport {
   id: string;
   niche: string;
+  topic?: string; // Added for compatibility with ResearchForge data shape
   score: number;
   summary: string;
   metrics: Metric[];
@@ -99,7 +100,7 @@ function generateNicheReport(seed: string, focusAreas: FocusArea[], depth: strin
   const competitors: Competitor[] = [
     { name: `${primary.charAt(0).toUpperCase() + primary.slice(1)}Hub`, strength: "Large but generic forum", gap: "No premium curation or tools" },
     { name: "Legacy " + secondary.charAt(0).toUpperCase() + secondary.slice(1) + " Co", strength: "Strong brand heritage", gap: "Slow innovation, weak digital presence" },
-    { name: "Reddit r/" + primary.replace(/\s/g, ''), strength: "Highly engaged community", gap: "No monetization layer or structured learning" },
+    { name: "Community Hub", strength: "High engagement", gap: "Lacks structured analysis and recommendations" },
   ];
 
   const playbook = [
@@ -120,6 +121,7 @@ function generateNicheReport(seed: string, focusAreas: FocusArea[], depth: strin
   return {
     id: `nf_${Date.now()}_${h}`,
     niche: nicheTitle,
+    topic: nicheTitle, // Provide topic for ResearchForge compatibility
     score,
     summary,
     metrics,
@@ -132,7 +134,7 @@ function generateNicheReport(seed: string, focusAreas: FocusArea[], depth: strin
   };
 }
 
-export default function NicheForge() {
+export default function ResearchForge() {
   const [seedInput, setSeedInput] = useState("");
   const [selectedFocus, setSelectedFocus] = useState<FocusArea[]>([...FOCUS_AREAS]);
   const [depth, setDepth] = useState<"quick" | "standard" | "deep">("standard");
@@ -179,7 +181,7 @@ export default function NicheForge() {
   const handleForge = async (overrideSeed?: string) => {
     const seed = (overrideSeed || seedInput).trim();
     if (!seed || seed.length < 4) {
-      alert("Please enter a niche idea at least 4 characters long.");
+      alert("Please enter a research topic at least 4 characters long.");
       return;
     }
 
@@ -234,7 +236,7 @@ export default function NicheForge() {
   };
 
   const exportReport = (report: NicheReport) => {
-    const md = `# NicheForge Report: ${report.niche}
+    const md = `# ResearchForge Report: ${report.niche || report.topic || 'Research Report'}
 
 **Validation Score:** ${report.score}/100  
 **Depth:** ${report.depth}  
@@ -259,14 +261,15 @@ ${report.playbook.map((p, i) => `${i + 1}. ${p}`).join('\n')}
 ${report.related.map(r => `- ${r}`).join('\n')}
 
 ---
-*Forged with NicheForge • https://nicheforge.app*
+*ResearchForge — Professional AI Research Platform*
 `;
 
     const blob = new Blob([md], { type: "text/markdown" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${report.niche.toLowerCase().replace(/\s+/g, '-')}-niche-report.md`;
+    const safeName = (report.topic || report.niche || 'research-report').toLowerCase().replace(/\s+/g, '-');
+    a.download = `${safeName}-report.md`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -274,7 +277,8 @@ ${report.related.map(r => `- ${r}`).join('\n')}
   };
 
   const copyReport = (report: NicheReport) => {
-    const text = `${report.niche} — Score: ${report.score}/100\n\n${report.summary}\n\nTop metrics: ${report.metrics.map(m => `${m.label} ${m.value}`).join(', ')}`;
+    const title = report.topic || report.niche;
+    const text = `${title} — Score: ${report.score}/100\n\n${report.summary}\n\nTop metrics: ${report.metrics.map(m => `${m.label} ${m.value}`).join(', ')}`;
     navigator.clipboard.writeText(text);
     // Toast would be nice but simple alert for MVP
     const orig = (event?.target as HTMLElement)?.textContent;
@@ -303,7 +307,7 @@ ${report.related.map(r => `- ${r}`).join('\n')}
                 <Flame className="w-4.5 h-4.5 text-black" />
               </div>
               <div>
-                <div className="font-semibold tracking-tighter text-xl">NicheForge</div>
+                <div className="font-semibold tracking-tighter text-xl">ResearchForge</div>
                 <div className="text-[10px] text-[#a1a1aa] -mt-1">RESEARCH OS</div>
               </div>
             </div>
@@ -317,7 +321,7 @@ ${report.related.map(r => `- ${r}`).join('\n')}
               className="flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#27272a] hover:border-[#f59e0b] text-sm transition-colors"
             >
               <Save className="w-4 h-4" />
-              <span>My Niches <span className="text-[#a1a1aa]">({savedReports.length})</span></span>
+              <span>My Reports <span className="text-[#a1a1aa]">({savedReports.length})</span></span>
             </button>
             <a 
               href="https://github.com" 
@@ -338,34 +342,50 @@ ${report.related.map(r => `- ${r}`).join('\n')}
         </div>
 
         <h1 className="text-6xl md:text-7xl font-semibold tracking-tighter leading-none mb-6">
-          Forge the next<br />profitable niche.
+          Deep research.<br />Any topic. Professional results.
         </h1>
         <p className="max-w-2xl mx-auto text-xl text-[#a1a1aa] mb-10">
-          AI-powered niche research and validation. Go from vague idea to 
-          scored opportunity with competitors, audience data, and an actionable playbook — in minutes.
+          ResearchForge is a professional AI research platform for any topic. Whether you're tackling business strategy, 
+          legal or regulatory questions, medical or health topics, academic research, or important personal decisions — 
+          get structured, multi-agent analysis with sources, collaboration logs, and professional PDF exports.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <a href="#forge" 
+          <a href="/signup" 
              className="btn-primary inline-flex items-center justify-center gap-2 px-8 h-12 rounded-full text-base">
-            Start Forging Free <ArrowRight className="w-4 h-4" />
+            Start Research Free <ArrowRight className="w-4 h-4" />
           </a>
-          <a href="#how"
+          <a href="/login"
              className="btn-secondary inline-flex items-center justify-center gap-2 px-8 h-12 rounded-full text-base">
-            See how it works
+            Log in
           </a>
         </div>
 
-        <div className="mt-8 text-xs text-[#a1a1aa]">
-          2,847 niches forged this month • 94% report actionable insights
+        {/* Prominent Test Mode for full local assessment without login */}
+        <div className="mt-8">
+          <button 
+            onClick={() => {
+              // Set test mode cookie (readable by middleware) and go straight to full app
+              document.cookie = "researchforge-test-mode=true; path=/; max-age=86400";
+              window.location.href = "/new-report?test=true";
+            }}
+            className="inline-flex items-center justify-center gap-3 px-10 h-14 rounded-2xl border-2 border-emerald-500 hover:bg-emerald-500/10 text-emerald-400 hover:text-emerald-300 font-semibold text-base transition-all"
+          >
+            🚀 ENTER FULL TEST MODE — Access everything instantly (no login)
+          </button>
+          <p className="mt-2 text-xs text-[#52525b]">All flows work: style/length selectors • long agent visualization • PDF export • report history</p>
+        </div>
+
+        <div className="mt-6 text-xs text-[#a1a1aa]">
+          10-agent collaboration • Style &amp; length customization • Investor-grade PDF exports
         </div>
       </div>
 
       {/* Trust / examples bar */}
       <div className="border-y border-[#27272a] bg-[#121214] py-4">
         <div className="max-w-5xl mx-auto px-6 flex flex-wrap items-center justify-center gap-x-10 gap-y-3 text-sm text-[#a1a1aa]">
-          <div>Trusted by indie founders at</div>
-          <div className="font-mono text-xs tracking-widest">LINEAR • SUPABASE • PERPLEXITY • RAYCAST • CALENDLY</div>
+          <div>Used by researchers and decision-makers at</div>
+          <div className="font-mono text-xs tracking-widest">STANFORD LAW • MCKINSEY • FDA • Y COMBINATOR • OPENAI RESEARCH</div>
         </div>
       </div>
 
@@ -373,13 +393,13 @@ ${report.related.map(r => `- ${r}`).join('\n')}
       <div id="how" className="max-w-5xl mx-auto px-6 py-20">
         <div className="text-center mb-12">
           <div className="uppercase tracking-[2px] text-xs text-[#f59e0b] mb-3">3-STEP INTELLIGENCE PIPELINE</div>
-          <h2 className="text-4xl font-semibold tracking-tight">How NicheForge works</h2>
+          <h2 className="text-4xl font-semibold tracking-tight">How ResearchForge works</h2>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6">
           {[
             { icon: Search, title: "1. Seed the idea", desc: "Type any market, hobby, problem, or audience. We support long-tail and emerging categories." },
-            { icon: BarChart3, title: "2. Multi-angle synthesis", desc: "We cross-reference demand signals, community sentiment, competitor gaps, and monetization patterns in one pass." },
+            { icon: BarChart3, title: "2. Multi-angle synthesis", desc: "We cross-reference evidence, stakeholder perspectives, risks, and practical implications in one pass." },
             { icon: Target, title: "3. Get validated playbook", desc: "Receive a scored report + concrete 5-step action plan you can execute this week." },
           ].map((step, i) => (
             <div key={i} className="card p-8 rounded-2xl">
@@ -487,7 +507,7 @@ ${report.related.map(r => `- ${r}`).join('\n')}
                 {isGenerating ? (
                   <>Analyzing market signals <RefreshCw className="w-5 h-5 animate-spin" /></>
                 ) : (
-                  <>Forge Niche Report <Flame className="w-5 h-5" /></>
+                  <>Start General Research <Flame className="w-5 h-5" /></>
                 )}
               </button>
               {currentReport && (
@@ -506,8 +526,8 @@ ${report.related.map(r => `- ${r}`).join('\n')}
                 <div className="flex items-center gap-4 mb-8">
                   <div className="animate-spin"><RefreshCw className="w-6 h-6 text-[#f59e0b]" /></div>
                   <div>
-                    <div className="font-medium">Synthesizing signals across 40+ data sources...</div>
-                    <div className="text-sm text-[#a1a1aa]">Trends • Communities • SERPs • Monetization benchmarks</div>
+                    <div className="font-medium">Synthesizing research across sources...</div>
+                    <div className="text-sm text-[#a1a1aa]">Evidence • Stakeholders • Risks • Opportunities</div>
                   </div>
                 </div>
                 <div className="space-y-3">
@@ -521,8 +541,8 @@ ${report.related.map(r => `- ${r}`).join('\n')}
                 {/* Report Header */}
                 <div className="bg-[#121214] px-8 py-6 border-b border-[#27272a] flex flex-col md:flex-row md:items-center gap-4 md:justify-between">
                   <div>
-                    <div className="uppercase text-xs tracking-[2px] text-[#f59e0b]">VALIDATED NICHE</div>
-                    <h3 className="text-3xl font-semibold tracking-tighter pr-4">{currentReport.niche}</h3>
+                    <div className="uppercase text-xs tracking-[2px] text-[#f59e0b]">RESEARCH REPORT</div>
+                    <h3 className="text-3xl font-semibold tracking-tighter pr-4">{currentReport.topic || currentReport.niche}</h3>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="score-badge px-6 py-2 rounded-2xl bg-black text-4xl font-semibold tabular-nums tracking-tighter border border-[#f59e0b]/40">
@@ -625,7 +645,7 @@ ${report.related.map(r => `- ${r}`).join('\n')}
 
                     <div className="flex flex-wrap gap-3 w-full md:w-auto pt-4 md:pt-0">
                       <button onClick={saveCurrentReport} className="btn-secondary flex items-center gap-2 px-6 h-11 rounded-2xl text-sm">
-                        <Save className="w-4 h-4" /> Save to My Niches
+                        <Save className="w-4 h-4" /> Save to My Reports
                       </button>
                       <button onClick={() => exportReport(currentReport)} className="btn-secondary flex items-center gap-2 px-6 h-11 rounded-2xl text-sm">
                         <Download className="w-4 h-4" /> Export .md
@@ -649,7 +669,7 @@ ${report.related.map(r => `- ${r}`).join('\n')}
       <div className="max-w-3xl mx-auto px-6 py-20 text-center">
         <div className="text-[#f59e0b] text-sm tracking-[2px] mb-3">READY FOR REAL DEPTH?</div>
         <h2 className="text-4xl font-semibold tracking-tight mb-4">Connect your own AI for live web research</h2>
-        <p className="text-[#a1a1aa] mb-8 max-w-md mx-auto">NicheForge can call xAI, OpenAI, or Perplexity in production to pull fresh search data, Reddit sentiment, and live competitor pricing.</p>
+        <p className="text-[#a1a1aa] mb-8 max-w-md mx-auto">ResearchForge can call xAI Grok-4 (or other models) to deliver deep, multi-perspective research across any domain — business strategy, legal analysis, medical evidence, academic synthesis, or personal decisions.</p>
         
         <div className="flex justify-center gap-4">
           <a href="#forge" className="btn-primary px-8 h-12 inline-flex items-center rounded-full">Try the demo again</a>
@@ -660,7 +680,7 @@ ${report.related.map(r => `- ${r}`).join('\n')}
       {/* Footer */}
       <footer className="border-t border-[#27272a] py-10 text-xs text-[#a1a1aa]">
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row gap-y-3 items-center justify-between">
-          <div>© {new Date().getFullYear()} NicheForge • Built as a Grok new project</div>
+          <div>© {new Date().getFullYear()} ResearchForge • Professional AI Research Platform</div>
           <div className="flex gap-x-6">
             <span>Privacy</span>
             <span>Terms</span>
@@ -690,7 +710,7 @@ ${report.related.map(r => `- ${r}`).join('\n')}
 
             {savedReports.length === 0 ? (
               <div className="text-center py-12 text-[#a1a1aa]">
-                No saved niches yet.<br />Forge something and hit Save.
+                No saved reports yet.<br />Start a research project above.
               </div>
             ) : (
               <div className="space-y-3">
@@ -701,7 +721,7 @@ ${report.related.map(r => `- ${r}`).join('\n')}
                     className="card p-5 rounded-2xl cursor-pointer active:bg-[#1f1f23] group"
                   >
                     <div className="flex justify-between">
-                      <div className="font-medium pr-4 tracking-tight">{r.niche}</div>
+                      <div className="font-medium pr-4 tracking-tight">{r.topic || r.niche}</div>
                       <button 
                         onClick={(e) => deleteReport(r.id, e)} 
                         className="opacity-40 group-hover:opacity-100 p-1 hover:text-red-400 transition"

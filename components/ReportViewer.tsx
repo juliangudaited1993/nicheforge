@@ -12,7 +12,7 @@ interface Props {
 
 export default function ReportViewer({ report, onReforge }: Props) {
   const exportMarkdown = () => {
-    const md = `# NicheForge AI Report: ${report.niche}
+    const md = `# ResearchForge Report: ${report.niche || report.topic || 'Research Report'}
 
 **Score:** ${report.score}/100  
 **Depth:** ${report.depth}  
@@ -28,12 +28,12 @@ ${report.metrics.map(m => `- **${m.label}:** ${m.value}/100 — ${m.note}`).join
 ${report.insights.map(i => `- ${i}`).join('\n')}
 
 ## Competitor Landscape
-${report.competitors.map(c => `### ${c.name}\n- **Strength:** ${c.strength}\n- **Gap:** ${c.gap}`).join('\n\n')}
+${(report.competitors || []).map(c => `### ${c.name}\n- **Strength:** ${c.strength}\n- **Gap:** ${c.gap}`).join('\n\n')}
 
 ## Action Playbook
 ${report.playbook.map((step, i) => `${i + 1}. ${step}`).join('\n')}
 
-## Related Niches
+## Related Topics
 ${report.related.map(r => `- ${r}`).join('\n')}
 `;
 
@@ -41,7 +41,8 @@ ${report.related.map(r => `- ${r}`).join('\n')}
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${report.niche.toLowerCase().replace(/\s+/g, '-')}-report.md`;
+    const safeName = (report.topic || report.niche || 'research-report').toLowerCase().replace(/\s+/g, '-');
+    a.download = `${safeName}-report.md`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

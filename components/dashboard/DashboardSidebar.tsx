@@ -32,7 +32,7 @@ export default function DashboardSidebar({ user }: { user: any }) {
             <Flame className="h-4.5 w-4.5 text-black" />
           </div>
           <div>
-            <div className="font-semibold tracking-tighter">NicheForge</div>
+            <div className="font-semibold tracking-tighter">ResearchForge</div>
             <div className="text-[10px] text-[#a1a1aa] -mt-1">AI</div>
           </div>
         </div>

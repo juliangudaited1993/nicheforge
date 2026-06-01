@@ -15,7 +15,9 @@ export interface Competitor {
 // Generalized report for any research topic
 export interface ResearchReport {
   id?: string;
-  topic: string; // was "niche"
+  topic: string;
+  // Legacy field kept for backward compatibility with older saved reports and the DB schema
+  niche?: string;
   score: number;
   depth: 'quick' | 'standard' | 'deep';
   researchStyle?: 'legal' | 'corporate' | 'medical' | 'personal' | 'academic';
@@ -23,8 +25,8 @@ export interface ResearchReport {
   summary: string;
   metrics: Metric[];
   insights: string[];
-  competitors?: Competitor[]; // generalized to key entities/competitors/cases
-  playbook: string[]; // generalized to action plan / recommendations
+  competitors?: Competitor[];
+  playbook: string[];
   related: string[];
   created_at?: string;
   full_data?: any;
@@ -83,8 +85,8 @@ export interface Profile {
   full_name: string | null;
   company: string | null;
   avatar_url: string | null;
-  subscription_tier: 'free' | 'pro';
-  // 'pro' = $49/month + one-time setup fee ($297-$497)
+  subscription_tier: 'free' | 'basic' | 'pro' | 'unlimited';
+  // Tiers: basic ($29, 20 reports), pro ($59, 100 reports + customization), unlimited ($99)
   stripe_customer_id: string | null;
   stripe_subscription_id: string | null;
   report_quota_used: number;
@@ -96,3 +98,23 @@ export interface Profile {
 }
 
 export type SubscriptionTier = Profile['subscription_tier'];
+
+// PDF Customization options for the new feature
+export interface PDFCustomizationOptions {
+  style: 'corporate' | 'legal' | 'medical' | 'personal' | 'academic';
+  primaryColor: string; // hex e.g. '#f59e0b'
+  secondaryColor?: string;
+  pageFormat: 'letter' | 'a4';
+  length: 'short' | 'medium' | 'long';
+  font: 'helvetica' | 'times' | 'courier'; // jsPDF built-in
+  includeAgentLog: boolean;
+  includeSources: boolean;
+  includeCharts: boolean;
+  logoDataUrl?: string; // base64 for premium branding
+  logoPosition?: 'top-left' | 'top-center' | 'bottom';
+
+  // Premium cover page customization
+  coverTitle?: string;           // Replaces "RESEARCHFORGE" on cover (company name or custom)
+  coverSubtitle?: string;        // Optional line under the main title
+  customFooter?: string;         // Custom text in the PDF footer
+}

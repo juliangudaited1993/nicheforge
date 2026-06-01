@@ -1,6 +1,7 @@
 -- =====================================================
--- NicheForge AI - Supabase Database Schema
--- Run this in Supabase SQL Editor (or via migrations)
+-- ResearchForge - Supabase Database Schema
+-- General AI Research Platform for any topic (business, legal, medical, academic, personal, etc.)
+-- Run this in Supabase SQL Editor
 -- =====================================================
 
 -- Enable UUID extension
@@ -12,16 +13,19 @@ create extension if not exists "uuid-ossp";
 create table public.reports (
   id uuid default uuid_generate_v4() primary key,
   user_id uuid references auth.users(id) on delete cascade not null,
-  niche text not null,
+  topic text not null,                    -- Primary field: any research topic
+  niche text,                             -- Legacy / compatibility (deprecated)
+  research_style text default 'corporate' check (research_style in ('corporate','legal','medical','academic','personal')),
+  report_length text default 'medium' check (report_length in ('short','medium','long')),
   score integer not null check (score >= 0 and score <= 100),
   depth text not null check (depth in ('quick', 'standard', 'deep')),
   summary text not null,
   metrics jsonb not null,
   insights jsonb not null,
-  competitors jsonb not null,
+  competitors jsonb,
   playbook jsonb not null,
-  related jsonb not null,
-  full_data jsonb, -- full raw response from Grok if needed
+  related jsonb,
+  full_data jsonb,                        -- Contains style, length, agent log, sources, etc.
   created_at timestamptz default now() not null
 );
 
@@ -74,8 +78,8 @@ create table public.profiles (
   full_name text,
   company text,
   avatar_url text,
-  subscription_tier text default 'free' check (subscription_tier in ('free', 'pro')),
-  -- 'pro' = $49/month + one-time $297-$497 setup fee
+  subscription_tier text default 'free' check (subscription_tier in ('free', 'basic', 'pro', 'unlimited')),
+  -- basic = $29/mo (20 reports), pro = $59/mo (100 + customization), unlimited = $99/mo
   stripe_customer_id text,
   stripe_subscription_id text,
   report_quota_used integer default 0,

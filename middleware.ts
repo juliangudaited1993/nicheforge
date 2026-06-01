@@ -15,6 +15,6 @@ export const config = {
     '/new-report/:path*',
     '/alerts/:path*',
     '/settings/:path*',
-    '/pricing', // keep pricing accessible but can protect later
+    '/pricing',
   ],
 }

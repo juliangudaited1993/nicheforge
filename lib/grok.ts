@@ -22,11 +22,11 @@ function getXaiClient(): OpenAI | null {
 // Highest model available to the user. Set XAI_MODEL in .env to override.
 const DEFAULT_MODEL = process.env.XAI_MODEL || 'grok-4'; // Use highest available (grok-4 or whatever is latest/heaviest)
 
-const SYSTEM_PROMPT = `You are ResearchForge AI — a world-class, general-purpose deep research analyst capable of producing high-end professional reports on ANY topic: business, legal, medical, academic, personal, scientific, policy, or technical.
+const SYSTEM_PROMPT = `You are ResearchForge AI — a world-class, general-purpose deep research analyst. You produce fully professional, high-end research reports on ANY topic (business strategy, legal/regulatory questions, medical/clinical topics, academic/scholarly subjects, personal life decisions, scientific, policy, or technical domains).
 
-You adapt your tone, structure, depth, and recommendations perfectly to the requested **researchStyle** (corporate, legal, medical, academic, personal).
+You must adapt your tone, recommended sections, level of formality, evidence standards, and recommendations to the exact **researchStyle** provided (corporate, legal, medical, academic, or personal). Never use generic "business/niche" language when the style is legal, medical, academic, or personal.
 
-For DEEP mode, produce an extremely comprehensive, consultant-grade or scholarly-grade report with real, citable data, sources, and balanced analysis.
+For DEEP mode + Long length, produce an extremely comprehensive, consultant-grade or scholarly-grade report (target 16-22 pages when printed) with real, citable data, sources, balanced analysis, and style-appropriate depth.
 
 Always return **pure valid JSON** only with this exact structure (include all fields for deep reports):
 
@@ -101,7 +101,7 @@ Return ONLY the JSON object.`;
 
   // If no API key → use high-quality local fallback (demo mode)
   if (!client) {
-    return generateLocalFallbackReport(niche, depth);
+    return generateLocalFallbackReport(topic, depth, researchStyle, reportLength);
   }
 
   try {
@@ -110,7 +110,7 @@ Return ONLY the JSON object.`;
       model,
       messages: [
         { role: 'system', content: SYSTEM_PROMPT + customSection },
-        { role: 'user', content: `Generate a professional, high-signal niche intelligence report for: "${niche}"\n\nResearch depth: ${depth.toUpperCase()}\n\n${isDeep ? 'Use extremely deep analysis, detailed competitor breakdowns, financial projections, and real sources where possible.' : ''}\n\nReturn ONLY the JSON object.` }
+        { role: 'user', content: `Generate a professional, high-signal research report for: "${topic}"\n\nResearch depth: ${depth.toUpperCase()}\n\n${isDeep ? 'Use extremely deep analysis, detailed competitor breakdowns, financial projections, and real sources where possible.' : ''}\n\nReturn ONLY the JSON object.` }
       ],
       temperature: 0.65,
       max_tokens: isDeep ? 3800 : 2100,
@@ -123,7 +123,10 @@ Return ONLY the JSON object.`;
     const parsed = JSON.parse(content) as Partial<NicheReport>;
 
     return {
-      niche: parsed.niche || niche,
+      topic: parsed.topic || parsed.niche || topic,
+      niche: parsed.niche || parsed.topic || topic, // legacy compat only
+      researchStyle: (parsed as any).researchStyle || researchStyle,
+      reportLength: (parsed as any).reportLength || reportLength,
       score: Math.max(45, Math.min(98, parsed.score || 72)),
       summary: parsed.summary || 'Strong signals detected.',
       metrics: parsed.metrics?.slice(0, 6) || [],
@@ -138,13 +141,12 @@ Return ONLY the JSON object.`;
       financial_projections: parsed.financial_projections,
       risk_assessment: parsed.risk_assessment,
       detailed_sources: parsed.detailed_sources,
-      // For the visualizer we use the rich simulated 10-agent experience
       agent_collaboration_log: parsed.agent_collaboration_log || [],
     };
 
   } catch (error) {
     console.error('Grok generation failed:', error);
-    return generateLocalFallbackReport(niche, depth);
+    return generateLocalFallbackReport(topic, depth, researchStyle, reportLength);
   }
 }
 
@@ -175,51 +177,168 @@ async function callAgent(client: any, model: string, agentName: string, agentRol
   }
 }
 
-// Fallback (the previous high-quality deterministic generator we built)
+// Fully generalized ResearchForge fallback generator with category-specific templates
 function generateLocalFallbackReport(
   seed: string,
-  depth: 'quick' | 'standard' | 'deep'
+  depth: 'quick' | 'standard' | 'deep',
+  researchStyle: string = 'corporate',
+  reportLength: string = 'medium'
 ): NicheReport {
-  // Reuse a simplified version of the previous excellent generator
   const h = seed.split('').reduce((a, c) => a + c.charCodeAt(0), 0) % 100;
   const base = 64 + (h % 26);
   const score = Math.min(94, Math.max(58, base + (depth === 'deep' ? 6 : depth === 'quick' ? -5 : 0)));
 
-  const words = seed.toLowerCase().split(/\s+/);
-  const primary = words[0] || 'niche';
+  const title = seed.split(/\s+/).filter(Boolean).map(w => w[0].toUpperCase() + w.slice(1)).join(' ');
+  const style = (researchStyle || 'corporate').toLowerCase();
+
+  // Style-specific content templates
+  let summary: string;
+  let metrics: any[];
+  let insights: string[];
+  let competitors: any[];
+  let playbook: string[];
+  let related: string[];
+
+  if (style === 'legal') {
+    summary = `Legal and regulatory analysis of "${title}" identifies key precedents, compliance obligations, jurisdictional variations, and risk exposures. The research highlights evolving standards and practical implications for organizations and individuals.`;
+    metrics = [
+      { label: "Regulatory Clarity", value: Math.min(92, 55 + (h % 30)), note: "Varies by jurisdiction" },
+      { label: "Precedent Strength", value: Math.min(88, 60 + (h % 25)), note: "Based on recent cases" },
+      { label: "Compliance Risk", value: 35 + (h % 35), note: "Context-dependent" },
+      { label: "Enforcement Trend", value: Math.min(90, 50 + (h % 28)), note: "Increasing scrutiny" },
+      { label: "Actionability", value: Math.min(85, 58 + (h % 20)), note: "High with counsel review" },
+    ];
+    insights = [
+      `Recent regulatory developments and case law have materially changed the risk profile for "${title}".`,
+      "Multiple jurisdictions are adopting divergent approaches, creating compliance complexity.",
+      "Stakeholders consistently report gaps between formal rules and practical implementation.",
+    ];
+    competitors = [
+      { name: "Leading Law Firm Guidance", strength: "Authoritative but expensive", gap: "Limited practical templates" },
+      { name: "Regulatory Agency Publications", strength: "Official position", gap: "Often high-level and slow to update" },
+    ];
+    playbook = [
+      "Conduct jurisdiction-by-jurisdiction mapping of current obligations and recent enforcement actions.",
+      "Identify the three highest-risk areas for the specific organization or individual.",
+      "Develop a prioritized compliance roadmap with clear ownership and timelines.",
+      "Establish monitoring for upcoming regulatory changes and relevant case law.",
+    ];
+    related = [`Cross-border implications of ${title.toLowerCase()}`, "Emerging regulatory trends", "Sector-specific guidance"];
+  } else if (style === 'medical') {
+    summary = `Evidence-based clinical and health systems analysis of "${title}". The review synthesizes current guidelines, recent studies, real-world outcomes, safety considerations, and implementation challenges across different care settings.`;
+    metrics = [
+      { label: "Evidence Strength", value: Math.min(95, 62 + (h % 28)), note: "Quality of available studies" },
+      { label: "Guideline Consensus", value: Math.min(90, 55 + (h % 30)), note: "Across major bodies" },
+      { label: "Implementation Gap", value: 40 + (h % 30), note: "Between evidence and practice" },
+      { label: "Safety Profile", value: Math.min(88, 65 + (h % 20)), note: "Based on recent data" },
+      { label: "Patient Impact", value: Math.min(92, 60 + (h % 25)), note: "Potential outcome improvement" },
+    ];
+    insights = [
+      `Recent high-quality studies have shifted the standard of care or risk-benefit assessment for aspects of "${title}".`,
+      "Significant variation exists in adoption of best practices across different healthcare systems and settings.",
+      "Patient safety and ethical considerations require explicit attention in any implementation plan.",
+    ];
+    competitors = [
+      { name: "Major Clinical Guidelines", strength: "Evidence synthesis", gap: "May lag behind newest trials" },
+      { name: "Specialty Society Recommendations", strength: "Domain expertise", gap: "Sometimes conflicting between societies" },
+    ];
+    playbook = [
+      "Systematically review the highest-quality recent systematic reviews and major guidelines.",
+      "Map local barriers to adoption of current best practices.",
+      "Develop a phased implementation plan with clear metrics and safety monitoring.",
+      "Create clinician and patient education materials tailored to the local context.",
+    ];
+    related = [`Emerging therapies in ${title.toLowerCase()}`, "Health equity considerations", "Implementation science approaches"];
+  } else if (style === 'academic') {
+    summary = `Scholarly synthesis and critical analysis of "${title}". The review examines the current state of knowledge, methodological approaches, key debates, evidence gaps, and promising directions for future research.`;
+    metrics = [
+      { label: "Literature Maturity", value: Math.min(90, 50 + (h % 35)), note: "Volume and quality of studies" },
+      { label: "Methodological Rigor", value: Math.min(88, 55 + (h % 28)), note: "Dominant approaches" },
+      { label: "Consensus Level", value: Math.min(85, 48 + (h % 30)), note: "Across research community" },
+      { label: "Gap Significance", value: 60 + (h % 25), note: "Identified research needs" },
+      { label: "Theoretical Development", value: Math.min(82, 52 + (h % 25)), note: "Framework maturity" },
+    ];
+    insights = [
+      `The field of "${title}" has seen accelerated publication growth in the last five years, yet key conceptual and empirical gaps remain.`,
+      "Methodological diversity is both a strength and a source of incomparability across studies.",
+      "Several high-impact research questions are now tractable with current data and methods.",
+    ];
+    competitors = [
+      { name: "Leading Review Journals", strength: "Broad coverage", gap: "Sometimes lack depth in sub-areas" },
+      { name: "Specialized Handbooks", strength: "Comprehensive", gap: "Quickly become dated" },
+    ];
+    playbook = [
+      "Conduct a structured literature review with explicit inclusion criteria and quality assessment.",
+      "Map the dominant theoretical frameworks and identify points of tension or complementarity.",
+      "Design a research agenda that addresses the most consequential remaining gaps.",
+      "Propose methodological innovations or data sources that could advance the field.",
+    ];
+    related = [`Interdisciplinary connections to ${title.toLowerCase()}`, "Methodological innovations", "Open science opportunities"];
+  } else if (style === 'personal') {
+    summary = `Practical, values-aware analysis of "${title}" for individual decision-making. The review weighs personal circumstances, trade-offs, emotional factors, long-term implications, and realistic next steps.`;
+    metrics = [
+      { label: "Decision Complexity", value: Math.min(90, 55 + (h % 28)), note: "Number of relevant factors" },
+      { label: "Reversibility", value: Math.min(85, 50 + (h % 30)), note: "Ease of changing course" },
+      { label: "Information Quality", value: Math.min(88, 48 + (h % 32)), note: "Reliability of available guidance" },
+      { label: "Personal Fit Importance", value: 65 + (h % 25), note: "How much individual context matters" },
+      { label: "Actionability", value: Math.min(90, 62 + (h % 22)), note: "Realistic next steps available" },
+    ];
+    insights = [
+      `What works well for "${title}" is highly dependent on individual values, constraints, and life stage.`,
+      "Many popular recommendations overlook important personal trade-offs and hidden costs.",
+      "Small, well-chosen experiments are often more valuable than attempting perfect upfront decisions.",
+    ];
+    competitors = [
+      { name: "Popular Self-Help Content", strength: "Accessible and motivating", gap: "Often overly generic or overly optimistic" },
+      { name: "Expert Personal Advice", strength: "Tailored depth", gap: "Expensive and hard to access" },
+    ];
+    playbook = [
+      "Clarify your core values and non-negotiables related to this decision.",
+      "Gather high-quality information from diverse sources, including people who have made similar choices.",
+      "Design 1–2 low-risk experiments or information-gathering steps you can take in the next 30 days.",
+      "Create a simple decision framework or pros/cons matrix tailored to your specific situation.",
+    ];
+    related = [`Life stage considerations for ${title.toLowerCase()}`, "Values alignment tools", "Common pitfalls and how to avoid them"];
+  } else {
+    // Corporate / default business style
+    summary = `In-depth strategic analysis of "${title}". The research examines key dynamics, stakeholder interests, risks, opportunities, and actionable pathways forward.`;
+    metrics = [
+      { label: "Market Opportunity", value: Math.min(95, 65 + (h % 25)), note: "Size and growth trajectory" },
+      { label: "Competitive Intensity", value: 40 + (h % 35), note: "Current landscape" },
+      { label: "Differentiation Potential", value: Math.min(90, 55 + (h % 28)), note: "Room for unique positioning" },
+      { label: "Execution Risk", value: 38 + (h % 30), note: "Barriers to entry and scaling" },
+      { label: "Time to Value", value: Math.min(88, 50 + (h % 25)), note: "Realistic path to results" },
+    ];
+    insights = [
+      `Demand for solutions related to "${title}" is growing, but most existing offerings leave significant user needs unmet.`,
+      "Successful players combine strong domain expertise with modern delivery and go-to-market approaches.",
+      "The window for establishing a defensible position is still open but is narrowing as more entrants appear.",
+    ];
+    competitors = [
+      { name: "Incumbent Players", strength: "Brand and distribution", gap: "Often slow to innovate" },
+      { name: "Emerging Specialists", strength: "Focus and agility", gap: "Limited resources and reach" },
+    ];
+    playbook = [
+      "Define the core problem and map the key stakeholders and decision factors.",
+      "Analyze the current landscape, identifying major players, gaps, and trends.",
+      "Surface the highest-impact opportunities and risks.",
+      "Outline a clear, prioritized plan with measurable next steps.",
+    ];
+    related = [`Adjacent opportunities in ${title.toLowerCase()}`, "Emerging business models", "Go-to-market experiments that worked"];
+  }
 
   return {
-    // Safe split handles multiple spaces, empty words, etc.
-    niche: seed.split(/\s+/).filter(Boolean).map(w => w[0].toUpperCase() + w.slice(1)).join(' '),
+    topic: title,
+    niche: title, // legacy compat only
+    researchStyle: researchStyle as any,
+    reportLength: reportLength as any,
     score,
     depth,
-    summary: `The ${primary} space shows ${score > 80 ? 'exceptional' : 'strong'} commercial potential for affiliate and ecom operators. Multiple monetization vectors exist with relatively low competition in the premium/education layer.`,
-    metrics: [
-      { label: "Market Demand", value: Math.min(95, 70 + (h % 18)), note: "Growing 24-41% YoY" },
-      { label: "Competition", value: 42 + (h % 30), note: "Fragmented at the top" },
-      { label: "Monetization", value: 68 + (h % 22), note: "High AOV affiliate offers" },
-      { label: "Entry Barrier", value: 61 + (h % 19), note: "Content + offers win" },
-      { label: "Trend Velocity", value: 55 + (h % 28), note: "Accelerating" },
-    ],
-    insights: [
-      `${primary} buyers have 2.8x higher LTV than general consumer niches.`,
-      "Top converting traffic sources right now: TikTok + YouTube long-form + Reddit.",
-      "Best performing offer types: digital courses + curated toolkits + high-ticket coaching.",
-    ],
-    competitors: [
-      { name: "Mainstream Hub", strength: "Brand awareness", gap: "Weak conversion and trust" },
-      { name: "Reddit Community", strength: "High engagement", gap: "No monetization layer" },
-    ],
-    playbook: [
-      "Launch a high-signal newsletter or Skool community (target 800 members in 90 days).",
-      "Create 2-3 flagship reviews/comparisons targeting the #1 buyer objection.",
-      "Secure 2 micro-affiliate partners with strong audiences in the space.",
-      "Build and launch a $47–$97 info product or toolkit as proof of concept.",
-    ],
-    related: [
-      `${primary} tools for beginners`,
-      `advanced ${primary} automation`,
-      `${primary} case studies`,
-    ],
+    summary,
+    metrics,
+    insights,
+    competitors,
+    playbook,
+    related,
   };
 }

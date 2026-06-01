@@ -3,12 +3,18 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { generateAndSaveReport, getTrialStatus } from '@/app/actions';
-import { NicheReport } from '@/lib/types';
-import ReportViewer from '@/components/ReportViewer';
+import { NicheReport } from '@/lib/types'; // alias for ResearchReport - full generalization in progress
+import dynamic from 'next/dynamic';
+
+const ReportViewer = dynamic(() => import('@/components/ReportViewer'), {
+  ssr: false,
+  loading: () => <div className="card rounded-3xl p-8 text-center text-[#a1a1aa]">Loading report preview...</div>,
+});
 import { Flame } from 'lucide-react';
 import { toast } from 'sonner';
 import MultiAgentResearch from '@/components/MultiAgentResearch';
 import { generateProfessionalPDF } from '@/lib/generateProfessionalPDF';
+import PDFCustomizer from '@/components/PDFCustomizer';
 
 const DEPTHS = ['quick', 'standard', 'deep'] as const;
 
@@ -36,6 +42,7 @@ export default function NewReportPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedReport, setGeneratedReport] = useState<NicheReport | null>(null);
   const [trialStatus, setTrialStatus] = useState<any>(null);
+  const [showPDFCustomizer, setShowPDFCustomizer] = useState(false);
   const router = useRouter();
 
   // For long-running Deep visualizer: we fire the real Grok call immediately but let the scrolling
@@ -46,8 +53,8 @@ export default function NewReportPage() {
   const visualizerAreaRef = useRef<HTMLDivElement>(null);
 
   const handleGenerate = async () => {
-    if (!niche.trim() || niche.length < 4) {
-      toast.error('Please enter a niche with at least 4 characters');
+    if (!topic.trim() || topic.length < 4) {
+      toast.error('Please enter a research topic with at least 4 characters');
       return;
     }
 
@@ -192,7 +199,7 @@ export default function NewReportPage() {
             {!isGenerating ? (
               <button
                 onClick={handleGenerate}
-                disabled={!niche.trim()}
+                disabled={!topic.trim()}
                 className="btn-primary w-full h-14 rounded-2xl text-lg font-semibold flex items-center justify-center gap-3 disabled:opacity-60"
               >
                 Generate Report with Grok <Flame className="h-5 w-5" />
@@ -225,13 +232,37 @@ export default function NewReportPage() {
                     if (pendingGeneration) {
                       const result = await pendingGeneration;
                       if (result.success && result.report) {
-                        setGeneratedReport(result.report);
-                        const isDemo = result.report.id?.startsWith('demo-');
+                        const rawReport = result.report;
+
+                        // ALWAYS normalize the report for ResearchForge shape before using it anywhere
+                        const report = {
+                          ...rawReport,
+                          topic: rawReport.topic || rawReport.niche || 'Research Topic',
+                          niche: rawReport.niche || rawReport.topic || 'Research Topic',
+                          researchStyle: rawReport.researchStyle || researchStyle || 'corporate',
+                          reportLength: rawReport.reportLength || reportLength || 'medium',
+                        };
+
+                        setGeneratedReport(report);
+                        const isDemo = report.id?.startsWith('demo-');
+
+                        // In Test/Demo mode, persist the normalized version to localStorage
+                        if (isDemo) {
+                          try {
+                            const existing = JSON.parse(localStorage.getItem('researchforge_demo_reports') || '[]');
+                            const alreadyExists = existing.some((r: any) => r.id === report.id);
+                            if (!alreadyExists) {
+                              existing.unshift(report);
+                              localStorage.setItem('researchforge_demo_reports', JSON.stringify(existing.slice(0, 50)));
+                            }
+                          } catch (e) {}
+                        }
+
                         toast.success(isDemo 
-                          ? 'Report generated in Demo Mode (not saved to database)' 
+                          ? 'Report generated in Test Mode — saved to your local history' 
                           : 'Report generated and saved!');
                       } else {
-                        toast.error(result.error || 'Failed to generate report. Please try a different niche or shorter query.');
+                        toast.error(result.error || 'Failed to generate report. Please try a different topic or shorter query.');
                       }
                       setPendingGeneration(null);
                     }
@@ -267,18 +298,11 @@ export default function NewReportPage() {
             </p>
 
             <button
-              onClick={() => {
-                try {
-                  generateProfessionalPDF(generatedReport);
-                } catch (e) {
-                  console.error('PDF export error:', e);
-                  toast.error('PDF generation failed. Please try again.');
-                }
-              }}
+              onClick={() => setShowPDFCustomizer(true)}
               className="inline-flex items-center justify-center gap-3 bg-[#f59e0b] hover:bg-[#fbbf24] active:bg-[#d97706] text-black font-semibold text-lg px-12 h-14 rounded-2xl shadow-xl shadow-[#f59e0b]/20 transition-all active:scale-[0.985]"
             >
               <span>📄</span>
-              DOWNLOAD COMPLETE PDF REPORT
+              CUSTOMIZE &amp; DOWNLOAD PDF
             </button>
 
             <div className="mt-4 text-xs text-[#52525b]">Includes every insight from the live multi-agent conversation above • Print-ready • Professional formatting</div>
@@ -290,7 +314,7 @@ export default function NewReportPage() {
               <button
                 onClick={() => {
                   setGeneratedReport(null);
-                  setNiche('');
+                  setTopic('');
                 }}
                 className="btn-secondary rounded-2xl px-6 py-2"
               >
@@ -310,6 +334,14 @@ export default function NewReportPage() {
           </div>
 
           <ReportViewer report={generatedReport} />
+
+          {/* PDF Customization Modal */}
+          <PDFCustomizer
+            report={generatedReport}
+            isOpen={showPDFCustomizer}
+            onClose={() => setShowPDFCustomizer(false)}
+            userTier="unlimited" // In Test Mode unlock all; in production pass real tier from profile
+          />
         </div>
       )}
     </div>

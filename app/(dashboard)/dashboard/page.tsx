@@ -34,7 +34,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">Welcome back</h1>
           <p className="mt-1 text-[#a1a1aa]">
-            Here's what's happening with your niche intelligence.
+            Here's what's happening with your research projects.
           </p>
         </div>
         <div className="text-right text-sm">
@@ -72,12 +72,12 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
         <div className="card rounded-2xl p-6">
           <div className="text-sm text-[#a1a1aa]">Monthly Reports Used</div>
           <div className="mt-2 text-4xl font-semibold tracking-tighter">{quotaUsed} <span className="text-xl text-[#a1a1aa]">/ {quotaLimit}</span></div>
-          <div className="text-xs text-[#22c55e] mt-1">Unlimited on Pro ($49/mo + setup fee)</div>
+          <div className="text-xs text-[#22c55e] mt-1">Higher limits on paid plans ($29+)</div>
         </div>
         <div className="card rounded-2xl p-6 flex flex-col justify-between">
           <div>
             <div className="text-sm text-[#a1a1aa]">Current Plan</div>
-            <div className="mt-1 text-2xl font-semibold tracking-tight capitalize">{tier === 'pro' ? 'Pro ($49/mo + Setup)' : tier}</div>
+            <div className="mt-1 text-2xl font-semibold tracking-tight capitalize">{tier}</div>
           </div>
           {tier === 'free' || tier === 'demo' ? (
             <Link href="/pricing" className="text-sm text-[#f59e0b] hover:underline inline-flex items-center gap-1 mt-3">
@@ -120,7 +120,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
             </div>
             <h3 className="text-2xl font-semibold tracking-tight">Live 10-Agent Research Visualization</h3>
             <p className="mt-2 text-[#a1a1aa] max-w-md">
-              Watch 10 specialized AI agents debate, research sources with live company logos, and synthesize a complete strategy in real time. The best way to experience NicheForge.
+              Watch 10 specialized AI agents debate, research sources with live company logos, and synthesize a complete strategy in real time. The best way to experience ResearchForge.
             </p>
             <Link href="/new-report" className="mt-4 inline-flex btn-primary px-6 py-2.5 rounded-2xl text-sm">
               Try Deep Research Now →
@@ -154,7 +154,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
               >
                 <div className="flex justify-between items-start gap-3">
                   <div className="font-medium tracking-tight line-clamp-2 pr-1 flex-1">
-                    {report.niche}
+                    {report.topic || report.niche}
                   </div>
                   <div className="text-3xl font-semibold tabular-nums text-[#f59e0b] shrink-0">
                     {report.score}
@@ -171,7 +171,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
           <div className="card rounded-2xl p-10 text-center">
             <FileText className="mx-auto h-10 w-10 text-[#f59e0b]/60" />
             <p className="mt-4 text-lg font-medium">No reports yet</p>
-            <p className="mt-1 text-[#a1a1aa]">Generate your first niche intelligence report with live 10-agent collaboration.</p>
+            <p className="mt-1 text-[#a1a1aa]">Generate your first professional research report with live multi-agent collaboration.</p>
             <Link href="/new-report" className="btn-primary mt-6 inline-flex items-center gap-2 rounded-2xl px-6 py-2.5">
               <Plus className="h-4 w-4" /> Start Deep Research
             </Link>

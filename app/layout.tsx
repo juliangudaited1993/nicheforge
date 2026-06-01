@@ -7,17 +7,19 @@ const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+  display: 'swap',
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
   title: "ResearchForge — Professional AI Research Platform",
-  description: "Deep, professional research reports on any topic. Customizable style, length, and format. Powered by advanced multi-agent AI collaboration.",
+  description: "Professional AI research on any topic — business, legal, medical, academic, personal, or technical. Customizable style and length. Multi-agent collaboration and investor-grade PDF exports.",
   icons: {
     icon: "/favicon.ico",
   },

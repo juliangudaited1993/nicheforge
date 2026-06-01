@@ -14,13 +14,16 @@ export default async function ReportDetailPage({ params }: { params: Promise<{ i
     .eq('id', id)
     .single();
 
-  if (!report) notFound();
+  if (!report) {
+    // Demo reports are not in the database. The client will attempt recovery from localStorage.
+    // We'll render a lightweight shell and let client JS hydrate the data.
+  }
 
   // Hydrate full rich report (supports deep fields stored in full_data or top-level columns)
   const full = report.full_data || {};
   const formattedReport = {
     id: report.id,
-    niche: report.niche,
+    topic: report.topic || report.niche,
     score: report.score,
     depth: report.depth,
     summary: report.summary,

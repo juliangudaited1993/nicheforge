@@ -18,10 +18,10 @@ export default function DashboardTopbar({ user }: { user: any }) {
     <div className="flex h-16 items-center justify-between border-b border-[#27272a] bg-[#121214] px-6">
       <div className="flex items-center gap-4">
         <div className="lg:hidden">
-          <div className="font-semibold tracking-tighter">NicheForge AI</div>
+          <div className="font-semibold tracking-tighter">ResearchForge</div>
         </div>
         <div className="hidden text-sm text-[#a1a1aa] lg:block">
-          AI Market Intelligence for Affiliates, Ecom &amp; MMO
+          Professional Research for Any Topic
         </div>
       </div>
 

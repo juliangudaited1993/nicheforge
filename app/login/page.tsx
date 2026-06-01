@@ -38,13 +38,13 @@ export default function LoginPage() {
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#f59e0b] to-[#b45309] flex items-center justify-center">
               <Flame className="w-5 h-5 text-black" />
             </div>
-            <span className="font-semibold text-2xl tracking-tighter">NicheForge AI</span>
+            <span className="font-semibold text-2xl tracking-tighter">ResearchForge</span>
           </div>
         </div>
 
         <div className="card rounded-3xl p-8">
           <h1 className="text-2xl font-semibold tracking-tight mb-1">Welcome back</h1>
-          <p className="text-[#a1a1aa] mb-6">Sign in to access your niche intelligence reports.</p>
+          <p className="text-[#a1a1aa] mb-6">Sign in to access your research reports.</p>
 
           <form onSubmit={handleLogin} className="space-y-4">
             <input
@@ -68,6 +68,19 @@ export default function LoginPage() {
             Don't have an account?{' '}
             <Link href="/signup" className="text-[#f59e0b] hover:underline">Sign up</Link>
           </p>
+
+          {/* Easy Test Mode bypass for local testing */}
+          <div className="mt-6 pt-6 border-t border-[#27272a] text-center">
+            <button
+              onClick={() => {
+                document.cookie = "researchforge-test-mode=true; path=/; max-age=86400";
+                window.location.href = "/new-report?test=true";
+              }}
+              className="text-sm text-emerald-400 hover:text-emerald-300 underline"
+            >
+              Skip login → Enter Full Test Mode (recommended for review)
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -1,8 +1,8 @@
-# NicheForge AI — Final Netlify Deployment Guide (Production Ready)
+# ResearchForge — Deployment Guide (General Professional Research Platform)
 
 **Status**: The entire app is complete, polished, and fully functional.
 
-- Pricing: $297–$497 one-time setup fee + $49/month subscription (hybrid model fully implemented).
+- Pricing: Clear 3 paid tiers — Basic $29 (20 reports/mo), Pro $59 (100 + customization), Unlimited $99.
 - 7-day trial (12 reports) with automatic enforcement and UI banners.
 - Live 10-agent visualization (long scrolling conversation with logos/links).
 - Professional PDF export with rich data.
@@ -24,12 +24,12 @@ This is the definitive guide. Follow it exactly to deploy and test.
 
 ## Step 2: Deploy to Netlify
 
-Since you already have a site called **NicheForgeDemo**, you should **connect your GitHub repo to this existing site** instead of creating a new one.
+Connect your GitHub repo to your existing Netlify site (or create a new one).
 
-### How to connect GitHub to your existing site (NicheForgeDemo):
+### How to connect GitHub to your existing site (your ResearchForge site):
 
 1. Go to [https://app.netlify.com](https://app.netlify.com) and log in.
-2. In the list of your sites, click on **NicheForgeDemo**.
+2. In the list of your sites, click on **your ResearchForge site**.
 3. Once inside the site dashboard, look at the left sidebar and click on **Site configuration**.
 4. In the Site configuration menu, click on **Build & deploy**.
 5. Scroll down until you see the section called **Continuous deployment**.
@@ -139,7 +139,7 @@ This will tell us the real GitHub link of your project.
 
 4. Click **Revoke** on Netlify.
 
-5. Go back to Netlify (while logged in with GitHub), go to your site **NicheForgeDemo** → Site configuration → Build & deploy → Continuous deployment, and click "Link repository" again.
+5. Go back to Netlify (while logged in with GitHub), go to your site **your ResearchForge site** → Site configuration → Build & deploy → Continuous deployment, and click "Link repository" again.
 
 6. When GitHub asks for access, **very carefully** choose the correct GitHub account and grant it access to **All repositories** (or at least the organization that owns your repo).
 
@@ -170,6 +170,9 @@ In Netlify → **Site settings → Environment variables**, add these **exactly*
 - `STRIPE_SECRET_KEY` = `sk_test_...` (or live)
 - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` = `pk_test_...`
 - `STRIPE_WEBHOOK_SECRET` = `whsec_...` (create a webhook endpoint pointing to `https://your-site.netlify.app/api/webhooks/stripe`)
+- `STRIPE_PRICE_BASIC_MONTHLY` = price_...   // $29/month
+- `STRIPE_PRICE_PRO_MONTHLY` = price_...     // $59/month
+- `STRIPE_PRICE_UNLIMITED_MONTHLY` = price_... // $99/month
 
 ### Optional but useful
 - `NEXT_PUBLIC_SITE_URL` = `https://your-app.netlify.app`
@@ -182,10 +185,11 @@ After adding variables, **trigger a new deploy** (or use "Clear cache and redepl
 3. Select events: `checkout.session.completed`, `customer.subscription.*`
 4. Copy the **Signing secret** and set it as `STRIPE_WEBHOOK_SECRET` in Netlify env vars.
 
-**Important for new pricing**: Create two prices in Stripe:
-- One-time price for the setup fee ($297-$497, e.g. $397)
-- Recurring price for $49/month
-Set the IDs in `STRIPE_PRICE_SETUP_FEE` and `STRIPE_PRICE_PRO_MONTHLY`.
+**New pricing (3 tiers)**: Create three monthly recurring prices in Stripe:
+- Basic: $29/month (20 reports)
+- Pro: $59/month (100 reports + customization)
+- Unlimited: $99/month
+Set the IDs in the corresponding STRIPE_PRICE_*_MONTHLY env vars.
 
 ---
 
@@ -222,10 +226,10 @@ After deploy, test these flows in order. The app should be fully functional for 
 
 3. **New Pricing + Stripe Checkout**
    - Go to `/pricing`.
-   - Confirm you see **Pro: $49/month + One-time setup fee $397 (range $297–$497)**.
-   - Click "Get Pro Access" and complete with Stripe test card `4242 4242 4242 4242`.
-   - Success redirects and plan updates to Pro (unlimited reports).
-   - Verify no more quota limits on report generation.
+   - Confirm you see the clear tiers: Basic $29/mo (20 reports), Pro $59/mo (100 + customization), Unlimited $99/mo.
+   - Click a paid plan and complete with Stripe test card `4242 4242 4242 4242`.
+   - Success redirects and subscription_tier + quota update correctly in the database.
+   - Verify quota enforcement and features match the chosen tier.
 
 4. **Saved Reports, History & PDF**
    - Go to `/reports` — list is searchable/sortable with quick PDF buttons.
@@ -245,13 +249,13 @@ After deploy, test these flows in order. The app should be fully functional for 
 
 ## Summary of What Has Been Built
 
-**NicheForge AI** — A complete, production-ready SaaS platform for AI-powered niche research and validation.
+**ResearchForge** — A complete, production-ready general research platform for deep AI analysis on any topic with style/length customization, live multi-agent collaboration, and professional PDF exports.
 
 ### Core Features
 - **Live 10-Agent Research Visualization** (the standout feature): Long, rich, back-and-forth conversation between 10 specialized AI agents. Pure top-to-bottom scrolling roll (no rotation), company logo icons for researched sources, visible research links, explicit cross-agent references. Deep mode lasts ~1m40s for full preview/tweaking experience.
 - **Professional PDF Reports**: 15-40 page investor-grade PDFs with executive summary, metrics with charts, competitor matrix, financial projections, detailed sources with credibility, full agent collaboration log, and 90-day action plan.
 - **7-Day Trial System**: New users automatically get 7 days + 12 reports. Clear UI banners, automatic enforcement, graceful transition to free tier (5 reports/month).
-- **Hybrid Pricing**: Free tier (5 reports/mo + 7-day trial), Pro ($49/month + one-time $297-$497 setup fee).
+- **Clear 3-Tier Pricing**: Free (5/mo + trial), Basic $29 (20 reports), Pro $59 (100 + customization), Unlimited $99.
 - **Full Dashboard Experience**: Recent reports, usage stats, saved reports history (searchable + sortable + quick PDF), trend alerts management, user settings with profile + billing portal.
 - **Stripe Integration**: Checkout for the hybrid Pro plan (one-time setup + monthly), customer portal, webhook handling for subscription sync and quota updates.
 - **Supabase Backend**: Auth, RLS-protected database (reports, profiles with trial data, trend alerts), server actions.

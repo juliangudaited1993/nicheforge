@@ -11,9 +11,9 @@ Built as `grok build --full-saas` on top of the initial Next.js 16 scaffold.
 ## What it does
 
 - **Seed any idea** — long-tail hobbies, emerging problems, audience segments, or product categories
-- **Multi-angle research** — demand, audience, competitors, monetization, content angles, risks
+- **Multi-angle research** — evidence, stakeholders, risks, opportunities, and practical implications across domains
 - **Instant scored report** — 0-100 validation score + metrics with explanations
-- **Actionable 5-step playbook** — concrete next actions you can run this week
+- **Actionable recommendations** — clear next steps tailored to the chosen research style and depth
 - **Save & export** — local history + clean Markdown export for sharing or Notion
 
 Everything runs in-browser with a high-quality deterministic research engine (same seed + settings = reproducible result). Perfect for demos, prototyping, or offline use.
@@ -85,7 +85,7 @@ The full flow (Dashboard → New Report with live 10-agent visualization → Det
 - **Saved Reports** — Full database-backed history with detail views
 - **Dashboard** — Clean professional overview with recent activity
 - **Trend Alerts** — Users can create keyword monitors (email delivery ready for later)
-- **Hybrid Pricing** — Free tier (5 reports/mo + 7-day trial) / Pro ($49/mo + one-time $297-$497 setup fee)
+- **Clear Pricing** — Free (5 reports + 7-day trial) / Basic $29/mo (20 reports) / Pro $59/mo (100 reports + customization) / Unlimited $99/mo
 - **Settings + Quota** — Foundation for usage limits and profiles
 
 ## Tech Stack

@@ -1,7 +1,7 @@
 {
   "name": "nicheforge",
   "version": "1.0.0",
-  "description": "NicheForge AI — Production-ready SaaS for AI-powered niche research with live 10-agent visualization, professional PDF reports, and 7-day trial system.",
+  "description": "ResearchForge — General-purpose AI research platform. Deep multi-agent analysis for any topic (business, legal, medical, academic, personal). Live collaboration visualization, style & length customization, professional PDF exports, 7-day trial.",
   "private": true,
   "engines": {
     "node": ">=18.17.0"

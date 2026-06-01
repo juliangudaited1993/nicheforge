@@ -38,12 +38,16 @@ export async function POST(req: NextRequest) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
         const userId = session.metadata?.supabase_user_id;
-        const plan = session.metadata?.plan as 'pro';
+        const plan = session.metadata?.plan as 'basic' | 'pro' | 'unlimited';
 
-        if (userId && plan === 'pro') {
+        if (userId && plan) {
+          let quotaLimit = 20;
+          if (plan === 'pro') quotaLimit = 100;
+          if (plan === 'unlimited') quotaLimit = 9999;
+
           const updates: any = {
-            subscription_tier: 'pro',
-            report_quota_limit: 999, // Unlimited for Pro (setup fee + monthly)
+            subscription_tier: plan,
+            report_quota_limit: quotaLimit,
           };
 
           if (session.subscription) {
@@ -71,11 +75,21 @@ export async function POST(req: NextRequest) {
 
         if (profile) {
           const isActive = subscription.status === 'active' || subscription.status === 'trialing';
+          // Determine quota based on metadata or default
+          const plan = subscription.metadata?.plan as 'basic' | 'pro' | 'unlimited' | undefined;
+          let quota = 5;
+          if (isActive) {
+            if (plan === 'unlimited') quota = 9999;
+            else if (plan === 'pro') quota = 100;
+            else if (plan === 'basic') quota = 20;
+            else quota = 9999; // fallback
+          }
+
           await supabase
             .from('profiles')
             .update({
-              subscription_tier: isActive ? 'pro' : 'free',
-              report_quota_limit: isActive ? 999 : 5,
+              subscription_tier: isActive ? (plan || 'pro') : 'free',
+              report_quota_limit: quota,
             })
             .eq('id', profile.id);
         }

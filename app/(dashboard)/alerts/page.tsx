@@ -75,7 +75,7 @@ export default function AlertsPage() {
   return (
     <div className="max-w-3xl">
       <h1 className="text-3xl font-semibold tracking-tight mb-2">Monthly Trend Alerts</h1>
-      <p className="text-[#a1a1aa] mb-8">Get notified when high-potential niches matching your interests appear.</p>
+      <p className="text-[#a1a1aa] mb-8">Get notified when high-potential topics matching your interests appear.</p>
 
       <div className="card rounded-2xl p-6 mb-8">
         <div className="flex gap-3">

@@ -56,7 +56,7 @@ export default function MultiAgentResearch({ topic, depth, researchStyle = 'corp
   const [currentPhase, setCurrentPhase] = useState(`Initializing ${researchStyle.charAt(0).toUpperCase() + researchStyle.slice(1)} Research Team`);
   const [viewMode, setViewMode] = useState<ViewMode>('conversation');
 
-  // Dynamic agent team based on research style (smart decision for general platform)
+  // Dynamic agent team based on research style — expanded ~7-8 agents for rich, consistent Deep conversations
   const getResearchTeam = (style: string): Agent[] => {
     const baseColors = ["#3b82f6", "#6366f1", "#8b5cf6", "#a855f7", "#f59e0b", "#f97316", "#ef4444", "#ec4899", "#14b8a6", "#10b981"];
     
@@ -64,8 +64,10 @@ export default function MultiAgentResearch({ topic, depth, researchStyle = 'corp
       corporate: [
         { name: "Market Analyst", role: "Industry & Market Dynamics", color: baseColors[0] },
         { name: "Competitive Intelligence", role: "Rival & Landscape Analysis", color: baseColors[2] },
+        { name: "Trend Forecaster", role: "Momentum & Timing", color: baseColors[4] },
         { name: "Financial Modeler", role: "Revenue & Cost Projections", color: baseColors[5] },
         { name: "Risk & Compliance", role: "Threats & Regulatory", color: baseColors[6] },
+        { name: "Data Interpreter", role: "Evidence Synthesis", color: baseColors[7] },
         { name: "Strategic Synthesizer", role: "Recommendations & Roadmap", color: baseColors[9] },
       ],
       legal: [
@@ -73,6 +75,8 @@ export default function MultiAgentResearch({ topic, depth, researchStyle = 'corp
         { name: "Regulatory Analyst", role: "Compliance & Policy", color: baseColors[3] },
         { name: "Risk Assessor", role: "Liability & Exposure", color: baseColors[6] },
         { name: "Precedent Strategist", role: "Historical Outcomes", color: baseColors[7] },
+        { name: "Evidence Analyst", role: "Documentation Review", color: baseColors[2] },
+        { name: "Enforcement Specialist", role: "Practical Application Risks", color: baseColors[5] },
         { name: "Legal Synthesizer", role: "Opinions & Recommendations", color: baseColors[9] },
       ],
       medical: [
@@ -80,6 +84,8 @@ export default function MultiAgentResearch({ topic, depth, researchStyle = 'corp
         { name: "Epidemiology Analyst", role: "Population Health Data", color: baseColors[2] },
         { name: "Treatment Strategist", role: "Protocols & Outcomes", color: baseColors[5] },
         { name: "Ethics & Safety", role: "Risks & Guidelines", color: baseColors[6] },
+        { name: "Data Interpreter", role: "Study Findings", color: baseColors[4] },
+        { name: "Implementation Advisor", role: "Real-World Application", color: baseColors[8] },
         { name: "Medical Synthesizer", role: "Clinical Recommendations", color: baseColors[9] },
       ],
       academic: [
@@ -87,6 +93,8 @@ export default function MultiAgentResearch({ topic, depth, researchStyle = 'corp
         { name: "Methodology Expert", role: "Research Design", color: baseColors[2] },
         { name: "Data Interpreter", role: "Findings Analysis", color: baseColors[4] },
         { name: "Theory Builder", role: "Frameworks & Models", color: baseColors[7] },
+        { name: "Gap Analyst", role: "Unanswered Questions", color: baseColors[3] },
+        { name: "Validation Specialist", role: "Reproducibility Check", color: baseColors[5] },
         { name: "Academic Synthesizer", role: "Conclusions & Gaps", color: baseColors[9] },
       ],
       personal: [
@@ -94,6 +102,8 @@ export default function MultiAgentResearch({ topic, depth, researchStyle = 'corp
         { name: "Options Analyst", role: "Alternatives & Tradeoffs", color: baseColors[3] },
         { name: "Risk Evaluator", role: "Personal Downsides", color: baseColors[6] },
         { name: "Practical Advisor", role: "Actionable Steps", color: baseColors[8] },
+        { name: "Values Analyst", role: "Alignment & Priorities", color: baseColors[2] },
+        { name: "Outcome Modeler", role: "Long-term Scenarios", color: baseColors[5] },
         { name: "Life Strategist", role: "Holistic Recommendations", color: baseColors[9] },
       ],
     };
@@ -110,9 +120,11 @@ export default function MultiAgentResearch({ topic, depth, researchStyle = 'corp
   const isDeep = depth === 'deep';
   const agentsToShow = isDeep ? researchTeam : researchTeam.slice(0, Math.min(6, researchTeam.length));
 
-  // Slightly faster per user request while keeping it long enough for design preview/tweaking.
-  // Deep: ~4.65s per message → ~1m 38s total for the full 21-message conversation roll.
-  const delay = isDeep ? 4650 : 2050;
+  // === Speed model requested by user ===
+  // - Visual conversation feels fast ("fast speaking and researching").
+  // - Total time from clicking Generate until the final PDF report appears: 20-45s.
+  const visualDelay = isDeep ? 720 : 380;                    // fast message appearance
+  const targetTotalMs = isDeep ? 34000 : 14000;              // ~34s Deep research feel before report is "ready"
 
   // Helper to build rich Source objects (logo badge + visible research link + optional insight)
   const makeSource = (key: string, url: string, insight?: string): Source => {
@@ -143,222 +155,258 @@ export default function MultiAgentResearch({ topic, depth, researchStyle = 'corp
   };
 
   const getConversationalMessages = (): AgentMessage[] => {
-    // Generalized for any research topic in ResearchForge.
-    // Agents adapt based on researchStyle. Rich back-and-forth with sources.
-    const styleLabel = researchStyle ? researchStyle.charAt(0).toUpperCase() + researchStyle.slice(1) : 'Corporate';
-    
+    const style = researchStyle || 'corporate';
+    const styleLabel = style.charAt(0).toUpperCase() + style.slice(1);
+    const shortTopic = topic.length > 60 ? topic.slice(0, 57) + '...' : topic;
+
+    // Highly generalized, style-aware conversations for ResearchForge.
+    // Messages adapt language, concerns, sources, and framing to the selected research style + actual topic.
     const base: AgentMessage[] = [
       {
         agent: researchTeam[0]?.name || "Lead Researcher",
-        message: `Deep research initiated on "${topic}". Initial scan across academic databases, regulatory bodies, and industry reports shows significant recent developments. Multiple high-quality sources identified in the last 18 months.`,
+        message: `Research initiated on "${shortTopic}". Comprehensive scan across primary databases, official records, recent publications, and domain-specific sources completed. Clear patterns and several high-signal developments identified in the last 12–24 months.`,
         timestamp: "00:05",
         sources: [
-          makeSource('google', `https://scholar.google.com/scholar?q=${encodeURIComponent(topic)}`, 'Recent scholarly articles'),
-          makeSource('reddit', `https://reddit.com/search?q=${encodeURIComponent(topic)}`, 'Community discussions'),
+          makeSource('google', `https://scholar.google.com/scholar?q=${encodeURIComponent(topic)}`, 'Primary literature & reports'),
+          makeSource('reddit', `https://reddit.com/search?q=${encodeURIComponent(topic)}`, 'Practitioner discussions'),
         ],
       },
       {
-        agent: "Demand Analyst",
-        message: `Building directly on the Researcher's Reddit pull — the dominant complaint in 31 of those threads is "no simple, trustworthy playbook" and "everyone overcharges for basic templates". Real emotional pain + willingness to pay. This is validated demand, not curiosity.`,
+        agent: researchTeam[1]?.name || "Analyst",
+        message: `Cross-referencing the initial data pull. For a ${style} lens on "${shortTopic}", the dominant theme is inconsistency in how practitioners currently approach this. Multiple stakeholders report the same core friction points with no authoritative, up-to-date synthesis available.`,
         timestamp: "00:11",
-        referencesPrevious: "Market Researcher",
+        referencesPrevious: researchTeam[0]?.name,
         sources: [
-          makeSource('reddit', 'https://reddit.com/r/Entrepreneur/comments/niche-pain', '31 threads cite "no good playbook"'),
+          makeSource('reddit', `https://reddit.com/search?q=${encodeURIComponent(topic)}`, 'Recurring practitioner pain'),
         ],
       },
       {
-        agent: "Competitor Analyst",
-        message: `Just scraped the top 4 players. The leader at top-competitor.com has ugly onboarding, zero case studies, and a $297 course that buries the actual templates behind a 9-module upsell. Their Trustpilot is 3.1. Massive gap.`,
+        agent: researchTeam[2]?.name || "Specialist",
+        message: `Mapped the current landscape. The leading existing resources on this topic are either outdated, narrowly focused on one jurisdiction/setting, or buried behind paywalls with limited methodology transparency. Significant white space for a modern, well-structured treatment.`,
         timestamp: "00:17",
         sources: [
-          makeSource('competitor', 'https://top-competitor.com', 'Ugly onboarding + weak social proof'),
-          makeSource('pricing', 'https://top-competitor.com/pricing', '$297 core offer'),
+          makeSource('competitor', 'https://example.com/leading-resource', 'Current top reference — gaps noted'),
         ],
       },
       {
-        agent: "Pricing Strategist",
-        message: `The Competitor Analyst's data is gold. $297 is psychological poison for this audience. We should launch at $67 core guide, $197 playbook bundle, and $497 live cohort. 4.2x conversion lift expected vs their model based on similar repositionings I've modeled.`,
+        agent: researchTeam[3]?.name || "Analyst",
+        message: `The gap the previous agent identified is material. In ${style} contexts, decision-makers repeatedly cite "no single source that connects the dots across the main variables" as the #1 blocker. This directly affects both quality of decisions and speed of execution.`,
         timestamp: "00:23",
-        referencesPrevious: "Competitor Analyst",
-        sources: [
-          makeSource('pricing', 'https://top-competitor.com/pricing', 'Current $297 anchor'),
-          makeSource('etsy', 'https://etsy.com/search?q=digital+planner+templates', 'Benchmarks at $19-67'),
-        ],
+        referencesPrevious: researchTeam[2]?.name,
       },
       {
-        agent: "Trend Forecaster",
-        message: `Search velocity is accelerating into Q4. TikTok search data (via Google Trends cross) shows this topic entering "breakout" status in 3 of the last 5 quarters. We are at the exact inflection point. 6-month window to own the narrative.`,
+        agent: researchTeam[4]?.name || "Forecaster",
+        message: `Momentum signals are strengthening. Publication volume, regulatory activity, and discussion frequency around "${shortTopic}" have all increased noticeably in the last 18 months. We are approaching an inflection where a clear, authoritative reference will have outsized influence.`,
         timestamp: "00:29",
         sources: [
-          makeSource('trends', 'https://trends.google.com', 'Breakout status in TikTok cross-signal'),
-          makeSource('tiktok', 'https://tiktok.com/search?q=' + encodeURIComponent(niche), 'High velocity short-form'),
+          makeSource('trends', `https://trends.google.com/trends/explore?q=${encodeURIComponent(topic)}`, 'Search interest trajectory'),
         ],
       },
       {
-        agent: "Traffic Specialist",
-        message: `Agree with the Forecaster on timing. SEO is a 9-month mistake here. TikTok + YouTube Shorts are printing pipeline right now for three comparable offers. One creator hit 1.4M views in 11 days with a 47-second "day in the life of this niche" hook. We replicate that.`,
+        agent: researchTeam[1]?.name || "Analyst",
+        message: `Strongly agree on timing. The combination of rising practitioner frustration + accelerating external change (regulation, technology, evidence base) creates a narrow but high-value window. Resources that appear in the next 6–9 months will likely become default references.`,
         timestamp: "00:35",
-        referencesPrevious: "Trend Forecaster",
-        sources: [
-          makeSource('tiktok', 'https://tiktok.com/@nichecreator/video/123', '1.4M views in 11 days'),
-          makeSource('youtube', 'https://youtube.com/results?search_query=' + encodeURIComponent(niche + ' tutorial'), 'Shorts dominating'),
-        ],
+        referencesPrevious: researchTeam[4]?.name,
       },
       {
-        agent: "Financial Modeler",
-        message: `Running numbers off the Demand + Traffic data. Conservative: 2,800 buyers in year 1 at $79 blended AOV = $221k revenue. With the $497 cohort at 9% attach rate we hit $314k. CAC on TikTok currently ~$11-14 for lookalikes. 14-18x LTV payback in month 1.`,
+        agent: researchTeam[5]?.name || "Modeler",
+        message: `Initial impact modeling for a high-quality deliverable on this topic: conservative adoption scenarios show meaningful reach within the core ${style} audience within 12 months, with clear downstream effects on decision quality, time saved, and risk reduction. The unit economics for a premium synthesized report or framework look very healthy.`,
         timestamp: "00:41",
-        sources: [
-          makeSource('semrush', 'https://semrush.com/analytics/keywordoverview/?q=' + encodeURIComponent(niche), 'Keyword CPC + volume'),
-        ],
       },
       {
-        agent: "Risk Analyst",
-        message: `The model looks healthy but the real threat is speed-to-content. Three new players launched similar positioning in the last 60 days. If our first 25 pieces of content aren't out in 45 days, we lose first-mover narrative control. Content velocity is the actual moat.`,
+        agent: researchTeam[6]?.name || "Risk Analyst",
+        message: `Key risks identified: (1) rapid evolution in one sub-area could date parts of the work quickly, (2) jurisdictional or contextual differences may require explicit scoping, (3) over-simplification could reduce credibility with sophisticated readers. We need to design the structure to handle these gracefully.`,
         timestamp: "00:47",
       },
       {
-        agent: "Offer Architect",
-        message: `Risk Analyst is right on velocity. Proposed stack that matches the psychology from the Reddit threads: $67 "Weekend Launch Kit" (immediate win) → $197 "Full Operator Playbook" (templates + scripts) → $497 "90-Day Cohort with live audits". The $67 is the hook that gets them in the door.`,
+        agent: researchTeam[7]?.name || "Architect",
+        message: `Risk mitigation: structure the output with clear "core framework + modular extensions" so the main deliverable stays stable while specific modules can be updated. Also recommend explicit sections on scope, assumptions, and "when this does not apply".`,
         timestamp: "00:53",
-        referencesPrevious: "Risk Analyst",
-        sources: [
-          makeSource('reddit', 'https://reddit.com/r/Entrepreneur/comments/niche-pain', 'Willingness to pay for "done-for-you"'),
-        ],
+        referencesPrevious: researchTeam[6]?.name,
       },
       {
-        agent: "Demand Analyst",
-        message: `The Offer Architect's $67 entry is spot on. In the 31 threads I analyzed earlier, 68% of people explicitly said they would pay $50-100 "tonight" for something that removes the overwhelm. The higher tiers can be sold inside the members area after the dopamine hit.`,
+        agent: researchTeam[0]?.name || "Lead Researcher",
+        message: `Fresh data confirms the risk points. Several recent high-profile cases or studies in the last 8 weeks directly relate to "${shortTopic}". Any authoritative treatment must address these explicitly or it will immediately feel behind the curve.`,
         timestamp: "00:59",
-        referencesPrevious: "Offer Architect",
+        referencesPrevious: researchTeam[7]?.name,
+        sources: [
+          makeSource('google', `https://scholar.google.com/scholar?q=${encodeURIComponent(topic + ' 2024 OR 2025')}`, 'Very recent developments'),
+        ],
       },
       {
-        agent: "Market Researcher",
-        message: `Quick update from fresh data pull: Amazon Best Sellers rank for related physical products in this lane is moving from #187 to #41 in the last 14 days. Physical proof + digital education is a powerful combo play we should mention in the report.`,
+        agent: researchTeam[2]?.name || "Specialist",
+        message: `I reviewed the primary source documents from the last two major updates in this area. The official guidance is more conservative than practitioner behavior on the ground. This tension is important to surface clearly in the report.`,
         timestamp: "01:05",
-        referencesPrevious: "Demand Analyst",
-        sources: [
-          makeSource('amazon', 'https://amazon.com/best-sellers/' + encodeURIComponent(niche.replace(/\s+/g, '-')), 'Rank jump #187→#41'),
-        ],
+        referencesPrevious: researchTeam[0]?.name,
       },
       {
-        agent: "Competitor Analyst",
-        message: `I also looked at the #2 and #3 players. Both are heavy on email funnels but have terrible landing pages (40%+ bounce). Their lead magnets are generic PDFs. We can destroy them with a beautiful Notion-style interactive playbook as the $67 front end.`,
+        agent: researchTeam[3]?.name || "Analyst",
+        message: `The tension the Specialist just flagged appears in 60%+ of the practitioner discussions I analyzed. People are operating in the gray zone between official guidance and real-world constraints. Documenting both the formal rules and the pragmatic patterns is essential.`,
         timestamp: "01:11",
-        sources: [
-          makeSource('competitor', 'https://top-competitor.com/landing', 'High bounce rates'),
-        ],
+        referencesPrevious: researchTeam[2]?.name,
       },
       {
-        agent: "Pricing Strategist",
-        message: `The interactive Notion angle is genius from the Competitor Analyst. We can price the Notion bundle at $87 instead of $67 and still be seen as the "reasonable" option. Perceived value skyrockets when it feels like software instead of an ebook.`,
+        agent: researchTeam[5]?.name || "Modeler",
+        message: `Updated projection incorporating the recent developments: a well-executed synthesis here has potential to become a frequently cited reference within the ${style} community. Early indicators (forum threads, newsletter mentions, conference talks) suggest strong latent demand.`,
         timestamp: "01:17",
-        referencesPrevious: "Competitor Analyst",
       },
       {
-        agent: "Traffic Specialist",
-        message: `For the first 60 days the only two channels that matter: TikTok organic (3-4 posts/day from founder) + one long YouTube video per week repurposed into 12 Shorts. Everything else is distraction. Reddit for validation only, not acquisition.`,
+        agent: researchTeam[4]?.name || "Forecaster",
+        message: `Additional signal: two major ${style} publications and one professional association have all published pieces touching on this exact area in the last 30 days. The conversation is moving from niche to mainstream within the field. Timing is strong.`,
         timestamp: "01:23",
         sources: [
-          makeSource('tiktok', 'https://tiktok.com/search?q=' + encodeURIComponent(niche), 'Organic velocity proof'),
-          makeSource('youtube', 'https://youtube.com', 'Long form repurposing'),
+          makeSource('substack', `https://substack.com/search?q=${encodeURIComponent(topic)}`, 'Recent field commentary'),
         ],
       },
       {
-        agent: "Financial Modeler",
-        message: `Updated model with the Notion bundle at $87 and 11% cohort attach: Year 1 revenue $267k–$341k, 73% gross margin. Break-even on ad spend by day 19. This is one of the cleanest unit economics I've modeled in 8 months.`,
+        agent: researchTeam[6]?.name || "Risk Analyst",
+        message: `One execution risk we haven't stressed enough: source credibility and citation quality. In ${style} work, readers are highly sensitive to weak sourcing. Every claim above a certain threshold needs traceable backing.`,
         timestamp: "01:29",
-        referencesPrevious: "Pricing Strategist",
       },
       {
-        agent: "Trend Forecaster",
-        message: `One more signal: three major Substack newsletters in the broader category mentioned this exact problem in the last 9 days. The narrative is leaking into the mainstream creator economy. Timing is genuinely perfect.`,
+        agent: researchTeam[7]?.name || "Architect",
+        message: `Agreed. I am recommending we include a "Sources & Credibility" appendix with tiered ratings and direct links. This directly addresses the risk the Risk Analyst raised and becomes a major differentiator vs existing resources.`,
         timestamp: "01:35",
-        sources: [
-          makeSource('substack', 'https://substack.com/search?q=' + encodeURIComponent(niche), '3 mentions in 9 days'),
-        ],
+        referencesPrevious: researchTeam[6]?.name,
       },
       {
-        agent: "Risk Analyst",
-        message: `Even with perfect timing, the biggest execution risk is founder content burnout. If the founder can't post daily for 8 weeks straight, the whole flywheel dies. We need to bake a 60-day content calendar + repurposing SOP into the $197 tier as a core deliverable.`,
+        agent: researchTeam[8]?.name || "Synthesizer",
+        message: `Pulling the threads together: rising demand, clear gaps in current resources, strong timing signals, manageable but real risks that we now have mitigation strategies for, and a structure that serves both quick reference and deep application use cases.`,
         timestamp: "01:41",
+        referencesPrevious: researchTeam[7]?.name,
       },
       {
-        agent: "Offer Architect",
-        message: `Risk point accepted. I'm adding a "Content Engine" module to the $197 tier that includes 90 pre-written hooks, 30 video scripts, and a Notion content calendar pre-filled for the first 8 weeks. That directly kills the #1 killer of these launches.`,
+        agent: researchTeam[1]?.name || "Analyst",
+        message: `Final validation on audience psychology: across the discussions reviewed, the #1 requested format is "something I can actually use this week" rather than another 80-page theoretical treatise. The deliverable should prioritize actionable frameworks while still being rigorous.`,
         timestamp: "01:47",
-        referencesPrevious: "Risk Analyst",
+        referencesPrevious: researchTeam[8]?.name,
       },
       {
-        agent: "Strategy Synthesizer",
-        message: `Synthesizing everything: validated demand, clear pricing gap, perfect timing, strong unit economics, and a differentiated offer that removes the exact objections from the Reddit data. This is a high-conviction 9.2/10 niche. Primary recommendation: ship the $67–$87 front-end offer this month and let content velocity do the rest.`,
+        agent: researchTeam[9]?.name || "Lead Synthesizer",
+        message: `All agents aligned. We have a high-conviction case for a modern, well-scoped, practitioner-oriented treatment of "${shortTopic}" tailored to ${styleLabel} needs. Primary recommendation: proceed with the research synthesis at the selected depth and length. The window is open.`,
         timestamp: "01:53",
-        referencesPrevious: "Offer Architect",
+        referencesPrevious: researchTeam[1]?.name,
       },
       {
-        agent: "Demand Analyst",
-        message: `Final cross-check on buyer psychology: the "overwhelm" objection appears in 81% of the analyzed threads. The Content Engine + interactive Notion bundle we designed attacks that objection more directly than any competitor. Conversion should be excellent.`,
+        agent: researchTeam[8]?.name || "Synthesizer",
+        message: `Report synthesis complete. Full agent log, sources with credibility notes, and recommended structure are ready for the final deliverable. This will serve the target ${style} audience effectively.`,
         timestamp: "01:59",
-        referencesPrevious: "Strategy Synthesizer",
-      },
-      {
-        agent: "Strategy Synthesizer",
-        message: `All 10 agents aligned. Report is ready. The window is open right now. Move fast, ship the low-ticket entry offer with heavy content support, then layer the higher tiers. This one has real legs.`,
-        timestamp: "02:05",
-        referencesPrevious: "Demand Analyst",
       },
     ];
 
-    // For non-deep we still give a solid but shorter show (first 7 messages)
+    // For non-deep we still give a solid but shorter show (first ~7 messages)
     return isDeep ? base : base.slice(0, 7);
   };
 
+  // Compute messages fresh each time inputs change
   const agentMessages = getConversationalMessages();
 
+  // Force a fresh simulation run whenever the core research parameters change.
+  const simulationKey = `${topic}-${researchStyle}-${depth}-${reportLength}`;
+
+  // === New speed + user-controlled scroll model ===
+  const [isAutoScrollPaused, setIsAutoScrollPaused] = useState(false);
+  const [hasUserScrolled, setHasUserScrolled] = useState(false);
+
   useEffect(() => {
+    // Reset everything for a brand new research run
+    setMessages([]);
+    setIsComplete(false);
+    setActiveAgentIndex(0);
+    setIsAutoScrollPaused(false);
+    setHasUserScrolled(false);
+    setCurrentPhase(`Initializing ${ (researchStyle || 'research').charAt(0).toUpperCase() + (researchStyle || 'research').slice(1) } Research Team`);
+
     let index = 0;
+    const currentMessages = getConversationalMessages();
+
+    const startTime = Date.now();
 
     const interval = setInterval(() => {
-      if (index < agentMessages.length) {
-        const msg = agentMessages[index];
+      if (index < currentMessages.length) {
+        const msg = currentMessages[index];
         setMessages(prev => [...prev, msg]);
-        setActiveAgentIndex(agentsToShow.findIndex(a => a.name === msg.agent));
 
-        // Dynamic phase labels for the much longer Deep conversation
-        if (index === 2) setCurrentPhase("Phase 1: Market & Intent Analysis");
-        if (index === 6) setCurrentPhase("Phase 2: Competitive & Financial Modeling");
-        if (index === 11) setCurrentPhase("Phase 3: Channel, Offer & Risk Iteration");
-        if (index === 16) setCurrentPhase("Phase 4: Final Cross-Agent Synthesis");
-        if (index === agentMessages.length - 1) setCurrentPhase("All Agents Aligned — Report Ready");
+        const foundIndex = agentsToShow.findIndex(a => a.name === msg.agent);
+        setActiveAgentIndex(foundIndex >= 0 ? foundIndex : 0);
+
+        // Style-aware phases (kept from previous improvement)
+        const styleLabel = (researchStyle || 'research').toLowerCase();
+        if (index === 2) setCurrentPhase(styleLabel === 'medical' ? "Phase 1: Evidence & Clinical Review" 
+          : styleLabel === 'legal' ? "Phase 1: Precedent & Regulatory Scan" 
+          : styleLabel === 'academic' ? "Phase 1: Literature & Methodology Review"
+          : styleLabel === 'personal' ? "Phase 1: Context & Tradeoff Analysis"
+          : "Phase 1: Discovery & Intent Analysis");
+        if (index === 6) setCurrentPhase(styleLabel === 'medical' ? "Phase 2: Outcomes, Protocols & Safety" 
+          : styleLabel === 'legal' ? "Phase 2: Risk Exposure & Compliance Modeling" 
+          : styleLabel === 'academic' ? "Phase 2: Data Interpretation & Gaps" 
+          : "Phase 2: Analysis & Synthesis");
+        if (index === 11) setCurrentPhase(styleLabel === 'medical' ? "Phase 3: Implementation & Ethics" 
+          : styleLabel === 'legal' ? "Phase 3: Jurisdictional & Enforcement Risks" 
+          : "Phase 3: Recommendations & Constraints");
+        if (index === 16) setCurrentPhase("Phase 4: Cross-Team Alignment & Final Deliverable");
+        if (index === currentMessages.length - 1) setCurrentPhase("All Agents Aligned — Final Synthesis");
 
         index++;
       } else {
         clearInterval(interval);
-        setIsComplete(true);
-        setTimeout(() => onComplete(), 900);
+
+        // Chat is visually complete. Now wait the remaining time so total research "feels" 20-45s.
+        const elapsed = Date.now() - startTime;
+        const remaining = Math.max(0, targetTotalMs - elapsed);
+
+        setTimeout(() => {
+          setIsComplete(true);
+          onComplete();
+        }, remaining + 400); // small buffer
       }
-    }, delay);
+    }, visualDelay);
 
     return () => clearInterval(interval);
-  }, [depth, onComplete]);
+  }, [simulationKey, onComplete, visualDelay, targetTotalMs]);
 
-  // Auto-scroll the conversation roll to bottom whenever a new agent message appears.
-  // This creates the clean "one message appears, previous content scrolls upward" roll effect with zero rotation.
+  // Smart auto-scroll that respects manual user scrolling
+  const handleScroll = () => {
+    if (!conversationRef.current) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = conversationRef.current;
+    const isNearBottom = scrollHeight - scrollTop - clientHeight < 80;
+
+    if (!isNearBottom) {
+      setHasUserScrolled(true);
+      setIsAutoScrollPaused(true);
+    } else if (hasUserScrolled) {
+      // User scrolled back to bottom → resume
+      setIsAutoScrollPaused(false);
+    }
+  };
+
   useEffect(() => {
-    if (messages.length > 0 && conversationRef.current) {
-      // Use requestAnimationFrame so layout has settled
+    if (!isAutoScrollPaused && messages.length > 0 && conversationRef.current) {
       requestAnimationFrame(() => {
         if (conversationRef.current) {
           conversationRef.current.scrollTo({
-            top: conversationRef.current.scrollHeight + 80,
+            top: conversationRef.current.scrollHeight + 90,
             behavior: 'smooth',
           });
         }
       });
     }
-  }, [messages.length]);
+  }, [messages.length, isAutoScrollPaused]);
 
-  const activeAgent = agentsToShow[activeAgentIndex];
+  // Allow parent to force resume if needed (optional)
+  const resumeAutoScroll = () => {
+    setIsAutoScrollPaused(false);
+    setHasUserScrolled(false);
+    if (conversationRef.current) {
+      conversationRef.current.scrollTo({
+        top: conversationRef.current.scrollHeight + 120,
+        behavior: 'smooth',
+      });
+    }
+  };
+
+  const activeAgent = agentsToShow[activeAgentIndex] || agentsToShow[0];
   const latestMessage = messages[messages.length - 1];
 
   return (
@@ -386,7 +434,7 @@ export default function MultiAgentResearch({ topic, depth, researchStyle = 'corp
 
       {/* Conversation Mode — Pure vertical scrolling roll (no rotation, no orb, no curves) */}
       {viewMode === 'conversation' && (
-        <div className="bg-[#0a0a0b] border-t border-[#27272a]">
+        <div className="bg-[#0a0a0b] border-t border-[#27272a] relative">
           {/* Status bar */}
           <div className="px-6 py-3 border-b border-[#27272a] flex items-center justify-between text-sm">
             <div className="flex items-center gap-3">
@@ -395,14 +443,15 @@ export default function MultiAgentResearch({ topic, depth, researchStyle = 'corp
                 <span className="font-medium text-[#ededed]">LIVE AGENT CONVERSATION ROLL</span>
               </div>
               <span className="text-[#52525b]">•</span>
-              <span className="text-[#a1a1aa]">{isDeep ? `${agentsToShow.length * 2 + 1} messages • Deep ${reportLength} preview` : 'Shorter preview • Standard'}</span>
+              <span className="text-[#a1a1aa]">{agentMessages.length} messages • {depth} {reportLength} preview</span>
             </div>
             <div className="text-[#52525b] font-mono text-xs">SCROLLING TRANSCRIPT • LIVE AGENT COLLABORATION</div>
           </div>
 
-          {/* The actual scrolling roll feed */}
+          {/* The actual scrolling roll feed - user can scroll freely, auto-scroll pauses when they do */}
           <div 
             ref={conversationRef}
+            onScroll={handleScroll}
             className="h-[620px] overflow-y-auto px-6 py-6 space-y-6 bg-[#050506] custom-scroll"
           >
             {messages.length === 0 && (
@@ -412,7 +461,7 @@ export default function MultiAgentResearch({ topic, depth, researchStyle = 'corp
             )}
 
             {messages.map((msg, idx) => {
-              const agent = agentsToShow.find(a => a.name === msg.agent)!;
+              const agent = agentsToShow.find(a => a.name === msg.agent) || agentsToShow[0] || { name: msg.agent, role: '', color: '#f59e0b' };
               const isLatest = idx === messages.length - 1 && !isComplete;
 
               return (
@@ -439,7 +488,9 @@ export default function MultiAgentResearch({ topic, depth, researchStyle = 'corp
                     </div>
                     <div className="text-[10px] text-[#52525b] font-mono tracking-widest">{msg.timestamp}</div>
                     {isLatest && !isComplete && (
-                      <div className="ml-auto text-[10px] px-2 py-px rounded bg-[#f59e0b] text-black font-semibold tracking-wider">NOW SPEAKING</div>
+                      <div className="ml-auto text-[10px] px-3 py-0.5 rounded-full bg-[#f59e0b] text-black font-semibold tracking-[1.5px] shadow-sm animate-pulse">
+                        NOW SPEAKING
+                      </div>
                     )}
                   </div>
 
@@ -511,6 +562,18 @@ export default function MultiAgentResearch({ topic, depth, researchStyle = 'corp
             <div ref={messagesEndRef} />
           </div>
 
+          {/* Resume auto-scroll button - appears when user manually scrolls up */}
+          {isAutoScrollPaused && !isComplete && (
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10">
+              <button
+                onClick={resumeAutoScroll}
+                className="px-4 py-1.5 rounded-full bg-[#f59e0b] text-black text-xs font-semibold shadow-lg hover:bg-[#fbbf24] transition flex items-center gap-2"
+              >
+                ▶ Resume live scroll
+              </button>
+            </div>
+          )}
+
           {/* Bottom bar with CTAs once complete — points user to the big hero PDF download that appears right after */}
           {isComplete && (
             <div className="border-t border-[#27272a] bg-[#121214] px-6 py-4 flex flex-wrap gap-3 justify-center text-sm text-[#a1a1aa]">
@@ -542,7 +605,7 @@ export default function MultiAgentResearch({ topic, depth, researchStyle = 'corp
           {/* Full Conversation Log (also shows the rich researched links + logos) */}
           <div className="max-h-[460px] overflow-y-auto space-y-5 pr-2">
             {messages.map((msg, index) => {
-              const agent = agentsToShow.find(a => a.name === msg.agent)!;
+              const agent = agentsToShow.find(a => a.name === msg.agent) || agentsToShow[0] || { name: msg.agent, role: '', color: '#f59e0b' };
               return (
                 <div key={index} className="flex gap-3">
                   <div className="w-8 h-8 rounded-xl flex-shrink-0 flex items-center justify-center text-xs font-bold mt-0.5" style={{ backgroundColor: agent.color + '20', color: agent.color }}>

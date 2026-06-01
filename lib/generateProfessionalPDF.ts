@@ -1,14 +1,44 @@
 import jsPDF from 'jspdf';
-import { NicheReport } from './types';
+import { NicheReport, PDFCustomizationOptions } from './types';
 
-export function generateProfessionalPDF(report: NicheReport) {
-  const doc = new jsPDF();
+const DEFAULT_CUSTOMIZATION: PDFCustomizationOptions = {
+  style: 'corporate',
+  primaryColor: '#f59e0b',
+  secondaryColor: '#3b82f6',
+  pageFormat: 'letter',
+  length: 'medium',
+  font: 'helvetica',
+  includeAgentLog: true,
+  includeSources: true,
+  includeCharts: true,
+  logoDataUrl: undefined,
+  logoPosition: 'top-left',
+};
+
+export function generateProfessionalPDF(
+  report: NicheReport,
+  options: Partial<PDFCustomizationOptions> = {}
+) {
+  const customization: PDFCustomizationOptions = {
+    ...DEFAULT_CUSTOMIZATION,
+    style: (report.researchStyle as any) || DEFAULT_CUSTOMIZATION.style,
+    length: (report.reportLength as any) || DEFAULT_CUSTOMIZATION.length,
+    ...options,
+  };
+
+  const primaryColor = customization.primaryColor;
+  const doc = new jsPDF({
+    format: customization.pageFormat === 'a4' ? 'a4' : 'letter',
+  });
+
+  // Apply chosen font (jsPDF built-in fonts)
+  doc.setFont(customization.font || 'helvetica');
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 18;
   const contentWidth = pageWidth - margin * 2;
 
-  const amber = '#f59e0b';
+  const amber = primaryColor; // Use chosen color
   const darkBg = '#111113';
   const textDark = '#171717';
 
@@ -24,7 +54,7 @@ export function generateProfessionalPDF(report: NicheReport) {
   doc.rect(0, 0, pageWidth, pageHeight, 'F');
 
   // Accent bar at top
-  doc.setFillColor(245, 158, 11); // amber
+  doc.setFillColor(amber); // primary accent color from customization
   doc.rect(0, 0, pageWidth, 8, 'F');
 
   const styleLabel = report.researchStyle ? report.researchStyle.toUpperCase() : 'RESEARCH';
@@ -32,7 +62,8 @@ export function generateProfessionalPDF(report: NicheReport) {
 
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(11);
-  doc.text("RESEARCHFORGE", margin, 28);
+  const coverTitle = customization.coverTitle || "RESEARCHFORGE";
+  doc.text(coverTitle.toUpperCase(), margin, 28);
   doc.setFontSize(9);
   doc.text(`CONFIDENTIAL ${styleLabel} INTELLIGENCE`, margin, 35);
 
@@ -42,9 +73,33 @@ export function generateProfessionalPDF(report: NicheReport) {
   doc.setFontSize(18);
   doc.text(report.topic || report.niche || 'Research Topic', margin, 90);
 
+  // Premium custom cover subtitle
+  if (customization.coverSubtitle) {
+    doc.setFontSize(12);
+    doc.setTextColor(200, 200, 200);
+    doc.text(customization.coverSubtitle, margin, 102);
+  }
+
+  // Add logo for premium users (base64 png/jpeg supported by jsPDF)
+  if (customization.logoDataUrl) {
+    try {
+      const logoSize = 25;
+      let logoX = pageWidth - margin - logoSize;
+      let logoY = 25;
+      if (customization.logoPosition === 'top-center') {
+        logoX = pageWidth / 2 - logoSize / 2;
+      } else if (customization.logoPosition === 'bottom') {
+        logoY = pageHeight - margin - logoSize - 10;
+      }
+      doc.addImage(customization.logoDataUrl, 'PNG', logoX, logoY, logoSize, logoSize);
+    } catch (e) {
+      console.warn('Logo could not be added to PDF', e);
+    }
+  }
+
   // Big score
   doc.setFontSize(72);
-  doc.setTextColor(245, 158, 11);
+  doc.setTextColor(amber);
   doc.text(String(report.score), margin, 140);
 
   doc.setFontSize(14);
@@ -56,7 +111,7 @@ export function generateProfessionalPDF(report: NicheReport) {
 
   // Footer
   doc.setFontSize(8);
-  doc.text(`Prepared by ResearchForge • ${styleLabel} Style • Powered by Grok`, margin, pageHeight - 18);
+  doc.text(`Prepared by ResearchForge • ${styleLabel} • ${lengthLabel} • Powered by Grok Heavy`, margin, pageHeight - 18);
 
   doc.addPage();
 
@@ -66,13 +121,14 @@ export function generateProfessionalPDF(report: NicheReport) {
 
   doc.setTextColor(17, 17, 19);
   doc.setFontSize(11);
-  doc.text("NICHEFORGE AI", margin, 18);
+  doc.text("RESEARCHFORGE", margin, 18);
   doc.setFontSize(8);
-  doc.text("EXECUTIVE SUMMARY", margin, 25);
+  const styleUpper = (report.researchStyle || 'research').toUpperCase();
+  doc.text(`${styleUpper} RESEARCH REPORT`, margin, 25);
 
   // Title
   doc.setFontSize(20);
-  doc.text(report.niche, margin, 42);
+  doc.text(report.topic || report.niche || 'Research Topic', margin, 42);
 
   // Score badge
   doc.setFillColor(245, 158, 11);
@@ -91,12 +147,20 @@ export function generateProfessionalPDF(report: NicheReport) {
   const summaryLines = doc.splitTextToSize(report.summary, contentWidth - 16);
   doc.text(summaryLines, margin + 8, 65);
 
-  // ==================== KEY METRICS WITH CHARTS ====================
+  // ==================== STYLE-ADAPTED KEY METRICS ====================
   let y = 125;
 
   doc.setTextColor(17, 17, 19);
   doc.setFontSize(13);
-  doc.text("KEY VALIDATION METRICS", margin, y);
+
+  const styleForMetrics = (report.researchStyle || 'corporate').toLowerCase();
+  const metricsTitle = styleForMetrics === 'legal' ? 'KEY LEGAL & REGULATORY METRICS'
+    : styleForMetrics === 'medical' ? 'KEY CLINICAL & HEALTH SYSTEMS METRICS'
+    : styleForMetrics === 'academic' ? 'KEY SCHOLARLY & RESEARCH METRICS'
+    : styleForMetrics === 'personal' ? 'KEY PERSONAL DECISION FACTORS'
+    : 'KEY STRATEGIC & MARKET METRICS';
+
+  doc.text(metricsTitle, margin, y);
   y += 12;
 
   const barHeight = 14;
@@ -119,11 +183,11 @@ export function generateProfessionalPDF(report: NicheReport) {
 
     // Value bar
     const barWidth = (metric.value / 100) * barMaxWidth;
-    doc.setFillColor(245, 158, 11);
+    doc.setFillColor(amber);
     doc.rect(margin + 85, y, barWidth, barHeight, 'F');
 
     // Value text
-    doc.setTextColor(245, 158, 11);
+    doc.setTextColor(amber);
     doc.setFontSize(9);
     doc.text(`${metric.value}`, margin + 88 + barWidth, y + 9);
 
@@ -192,17 +256,43 @@ export function generateProfessionalPDF(report: NicheReport) {
     y += 38;
   });
 
-  // ==================== ACTION PLAYBOOK ====================
+  // ==================== STYLE-AWARE RECOMMENDATIONS / ACTION PLAN ====================
   y += 5;
   if (y > pageHeight - 100) {
     doc.addPage();
     y = 25;
   }
 
+  const style = (report.researchStyle || 'corporate').toLowerCase();
+  const length = (report.reportLength || 'medium').toLowerCase();
+
+  const actionTitle = style === 'legal' ? 'LEGAL & COMPLIANCE RECOMMENDATIONS' 
+    : style === 'medical' ? 'CLINICAL & EVIDENCE-BASED RECOMMENDATIONS'
+    : style === 'academic' ? 'RESEARCH SYNTHESIS & NEXT STEPS'
+    : style === 'personal' ? 'PERSONAL DECISION FRAMEWORK & NEXT STEPS'
+    : 'STRATEGIC RECOMMENDATIONS & 90-DAY PLAN';
+
   doc.setTextColor(17, 17, 19);
   doc.setFontSize(13);
-  doc.text("90-DAY ACTION PLAN", margin, y);
+  doc.text(actionTitle, margin, y);
   y += 10;
+
+  // For longer reports, add style-specific framing paragraph
+  if (length === 'long' || length === 'medium') {
+    const framing = style === 'legal' 
+      ? 'This analysis considers regulatory precedent, jurisdictional variance, and risk exposure. All recommendations should be reviewed by qualified counsel before implementation.'
+      : style === 'medical'
+      ? 'Recommendations are synthesized from available evidence. This is not medical advice. Consult qualified clinicians and review primary sources before any clinical application.'
+      : style === 'academic'
+      ? 'This synthesis identifies gaps in the literature and proposes avenues for further empirical work. Citations and methodology notes are included in the full data.'
+      : 'The following actions are prioritized by impact and feasibility given the research scope and constraints identified.';
+    
+    doc.setFontSize(8);
+    doc.setTextColor(80, 80, 80);
+    const frameLines = doc.splitTextToSize(framing, contentWidth);
+    doc.text(frameLines, margin, y);
+    y += frameLines.length * 4 + 8;
+  }
 
   report.playbook.forEach((step, i) => {
     if (y > pageHeight - 30) {
@@ -211,7 +301,7 @@ export function generateProfessionalPDF(report: NicheReport) {
     }
 
     // Number circle
-    doc.setFillColor(245, 158, 11);
+    doc.setFillColor(amber);
     doc.circle(margin + 6, y + 4, 5, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(8);
@@ -318,7 +408,7 @@ export function generateProfessionalPDF(report: NicheReport) {
   }
 
   // ==================== DETAILED SOURCES ====================
-  if (report.detailed_sources && report.detailed_sources.length > 0) {
+  if (customization.includeSources && report.detailed_sources && report.detailed_sources.length > 0) {
     y += 15;
     if (y > pageHeight - 60) { doc.addPage(); y = 25; }
 
@@ -347,7 +437,7 @@ export function generateProfessionalPDF(report: NicheReport) {
   }
 
   // ==================== AGENT COLLABORATION SUMMARY ====================
-  if (report.agent_collaboration_log && report.agent_collaboration_log.length > 0) {
+  if (customization.includeAgentLog && report.agent_collaboration_log && report.agent_collaboration_log.length > 0) {
     y += 10;
     if (y > pageHeight - 60) { doc.addPage(); y = 25; }
 
@@ -380,7 +470,11 @@ export function generateProfessionalPDF(report: NicheReport) {
   // Final footer
   doc.setFontSize(7);
   doc.setTextColor(140, 140, 140);
-  doc.text("NicheForge AI • Generated with Grok Heavy (Multi-Agent) • Confidential", margin, pageHeight - 12);
+  const footerText = customization.customFooter 
+    ? customization.customFooter 
+    : "ResearchForge • Generated with Grok Heavy (Multi-Agent) • Confidential";
+  doc.text(footerText, margin, pageHeight - 12);
 
-  doc.save(`${report.niche.toLowerCase().replace(/\s+/g, '-')}-nicheforge-report.pdf`);
+  const filenameBase = (report.niche || report.topic || 'research-report').toLowerCase().replace(/\s+/g, '-');
+  doc.save(`${filenameBase}-researchforge-report.pdf`);
 }

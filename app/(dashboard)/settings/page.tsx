@@ -85,12 +85,12 @@ export default function SettingsPage() {
       {/* Subscription & Billing */}
       <div className="card rounded-3xl p-8">
         <h2 className="font-semibold text-lg mb-2">Subscription &amp; Billing</h2>
-        <p className="text-sm text-[#a1a1aa] mb-6">Manage your plan and access the full power of NicheForge (unlimited Deep research + alerts).</p>
+        <p className="text-sm text-[#a1a1aa] mb-6">Manage your plan and access the full power of ResearchForge (unlimited Deep research + alerts).</p>
 
         <div className="flex items-center justify-between p-5 rounded-2xl bg-[#121214] border border-[#27272a]">
           <div>
             <div className="text-sm text-[#a1a1aa]">Current plan</div>
-            <div className="text-2xl font-semibold tracking-tight mt-0.5">Free / Demo (or Pro with setup fee + $49/mo)</div>
+            <div className="text-2xl font-semibold tracking-tight mt-0.5">Free / Demo (or paid: Basic $29, Pro $59, Unlimited $99)</div>
           </div>
           <button 
             onClick={handleManageBilling}
@@ -118,7 +118,7 @@ export default function SettingsPage() {
           <div className="p-4 rounded-2xl bg-[#121214] border border-[#27272a]">
             <div className="text-[#a1a1aa]">Trend Alerts</div>
             <div className="text-3xl font-semibold mt-1 tabular-nums">Active</div>
-            <div className="text-xs mt-1">Unlimited on Pro ($49/mo + one-time setup)</div>
+            <div className="text-xs mt-1">Higher tiers unlock more reports and features</div>
           </div>
         </div>
       </div>
@@ -127,7 +127,7 @@ export default function SettingsPage() {
       <div className="card rounded-3xl p-8">
         <h2 className="font-semibold text-lg mb-3">AI Model</h2>
         <div className="text-sm text-[#a1a1aa]">
-          NicheForge uses <span className="font-semibold text-[#f59e0b]">Grok-4 (Heavy)</span> via xAI for the highest quality reasoning and the 10-agent live collaboration experience.
+          ResearchForge uses <span className="font-semibold text-[#f59e0b]">Grok-4 (Heavy)</span> via xAI for the highest quality reasoning and the 10-agent live collaboration experience.
         </div>
         <div className="mt-4 text-xs text-[#52525b]">
           You can bring your own xAI API key in a future self-hosted release.
