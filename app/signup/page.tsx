@@ -12,25 +12,43 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const isSupabaseConfigured = !!(supabaseUrl && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const isPlaceholder = (v?: string) =>
+    !v ||
+    v.trim() === '' ||
+    v.includes('your-project') ||
+    v.includes('placeholder') ||
+    v.includes('example.supabase') ||
+    (v.includes('your-anon') || (v.length > 0 && v.length < 20));
+  const isSupabaseConfigured = !!(supabaseUrl && supabaseKey && !isPlaceholder(supabaseUrl) && !isPlaceholder(supabaseKey));
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: `${location.origin}/dashboard`,
-        data: { full_name: fullName },
-      },
-    });
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: `${location.origin}/dashboard`,
+          data: { full_name: fullName },
+        },
+      });
 
-    if (error) {
-      toast.error(error.message);
-    } else {
-      toast.success('Account created! Check your email for the magic link.');
+      if (error) {
+        const msg = error.message || '';
+        if (msg.toLowerCase().includes('invalid') || msg.includes('key') || msg.includes('fetch') || msg.includes('network')) {
+          toast.error('Supabase auth error — check Publishable key/URL in Netlify + Supabase redirect URLs. Use Demo Login for now.');
+        } else {
+          toast.error(msg);
+        }
+      } else {
+        toast.success('Account created! Check your email for the magic link.');
+      }
+    } catch (err: any) {
+      console.error('[Signup] Unexpected error:', err);
+      toast.error('Signup failed. Use the Demo Account button below for full access while you finish Supabase setup.');
     }
     setLoading(false);
   };
@@ -57,6 +75,13 @@ export default function SignupPage() {
               <div>
                 Add your <strong>Publishable key</strong> from Supabase as <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> in Netlify, then click <strong>Clear cache and redeploy</strong>.
               </div>
+            </div>
+          )}
+
+          {/* Dev-only diagnostics: shows exactly what the browser build sees (helps debug localhost + console issues) */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="mb-4 rounded-lg border border-[#27272a] bg-[#111113] px-3 py-2 text-[10px] text-[#52525b] font-mono">
+              DEV DIAGNOSTICS — URL: {supabaseUrl ? supabaseUrl.replace(/https?:\/\/([^.]+).*/, 'https://$1...') : 'MISSING'} | Key: {supabaseKey ? supabaseKey.slice(0, 8) + '...' + supabaseKey.slice(-4) : 'MISSING'} | Configured: {isSupabaseConfigured ? 'YES ✓' : 'NO (using demo stub)'}
             </div>
           )}
 

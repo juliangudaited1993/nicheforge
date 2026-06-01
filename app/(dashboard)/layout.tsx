@@ -20,7 +20,10 @@ export default async function DashboardLayout({
   const cookieStore = await import('next/headers').then(m => m.cookies());
   const hasDemoLogin = cookieStore.get('researchforge-demo-login')?.value === 'true';
 
-  const isSupabaseMissing = !process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const isPlaceholder = (v?: string) => !v || v.trim()==='' || v.includes('your-project') || v.includes('placeholder') || v.includes('example.supabase') || v.includes('your-anon') || (v.length>0 && v.length<20);
+  const isSupabaseMissing = !supabaseUrl || !supabaseKey || isPlaceholder(supabaseUrl) || isPlaceholder(supabaseKey);
   const isDemoMode = isSupabaseMissing || hasDemoLogin;
   const isTestMode = process.env.NODE_ENV === 'development' || hasDemoLogin || isSupabaseMissing;
 

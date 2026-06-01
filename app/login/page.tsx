@@ -13,23 +13,43 @@ export default function LoginPage() {
   const router = useRouter();
 
   // Detect if Supabase keys are missing at build time (common on fresh Netlify deploys)
+  // Robust check: also rejects placeholder values so local .env with template shows the banner + safe demo stub
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const isSupabaseConfigured = !!(supabaseUrl && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const isPlaceholder = (v?: string) =>
+    !v ||
+    v.trim() === '' ||
+    v.includes('your-project') ||
+    v.includes('placeholder') ||
+    v.includes('example.supabase') ||
+    (v.includes('your-anon') || (v.length > 0 && v.length < 20));
+  const isSupabaseConfigured = !!(supabaseUrl && supabaseKey && !isPlaceholder(supabaseUrl) && !isPlaceholder(supabaseKey));
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: `${location.origin}/dashboard` },
-    });
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: { emailRedirectTo: `${location.origin}/dashboard` },
+      });
 
-    if (error) {
-      toast.error(error.message);
-    } else {
-      toast.success('Magic link sent! Check your email.');
+      if (error) {
+        // Give actionable guidance for common config issues (bad keys, redirects not set in Supabase, etc.)
+        const msg = error.message || '';
+        if (msg.toLowerCase().includes('invalid') || msg.includes('key') || msg.includes('fetch') || msg.includes('network')) {
+          toast.error('Supabase auth error — double-check your Publishable key + Project URL in Netlify (and Supabase Auth → Redirect URLs includes this site). Use Demo Login for now.');
+        } else {
+          toast.error(msg);
+        }
+      } else {
+        toast.success('Magic link sent! Check your email.');
+      }
+    } catch (err: any) {
+      console.error('[Login] Unexpected error:', err);
+      toast.error('Login failed. Check browser console for details. Use the Demo Account button below to access everything now.');
     }
     setLoading(false);
   };
@@ -63,6 +83,13 @@ export default function LoginPage() {
                 • You need to do a full "Clear cache and deploy" (or dummy git push)<br /><br />
                 <strong>To verify:</strong> In Netlify, go to a specific deploy → look for "Build details" or "Environment" section (or search the log for "Resolved config").
               </div>
+            </div>
+          )}
+
+          {/* Dev-only diagnostics: shows exactly what the browser build sees (helps debug localhost + console issues) */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="mb-4 rounded-lg border border-[#27272a] bg-[#111113] px-3 py-2 text-[10px] text-[#52525b] font-mono">
+              DEV DIAGNOSTICS — URL: {supabaseUrl ? supabaseUrl.replace(/https?:\/\/([^.]+).*/, 'https://$1...') : 'MISSING'} | Key: {supabaseKey ? supabaseKey.slice(0, 8) + '...' + supabaseKey.slice(-4) : 'MISSING'} | Configured: {isSupabaseConfigured ? 'YES ✓' : 'NO (using demo stub)'}
             </div>
           )}
 

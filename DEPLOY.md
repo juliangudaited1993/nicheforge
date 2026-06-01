@@ -214,6 +214,8 @@ This is common in the current Netlify UI. Here are the ways to force a clean bui
 
 3. Alternative: Go to **Site configuration → Build & deploy → Continuous deployment** and look for any "Deploy site" or "Redeploy" buttons there.
 
+**Critical (fixed in this version):** The netlify.toml previously had an empty `[build.environment]` block for the Supabase keys. This overrode dashboard settings and was the #1 reason the amber banner never disappeared. That section has been removed from netlify.toml in both the main folder and deploy-ready copy.
+
 **How to check which environment variables were actually used in a specific deploy:**
 
 This is the best way to verify if your Supabase or XAI keys made it into a build:

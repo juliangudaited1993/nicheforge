@@ -1,13 +1,24 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+function isValidSupabaseConfig(url?: string, key?: string): boolean {
+  if (!url || !key) return false
+  const u = url.trim()
+  const k = key.trim()
+  if (!u || !k) return false
+  if (u.includes('your-project') || u.includes('placeholder') || u.includes('example.supabase')) return false
+  if (k.includes('your-anon') || k.includes('placeholder') || k.length < 20) return false
+  if (!u.startsWith('https://') || !u.includes('.supabase.')) return false
+  return true
+}
+
 export async function updateSession(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-  // Safety guard: If Supabase env vars are missing, don't crash the app.
-  // This allows the marketing page + login to work even without setup.
-  if (!supabaseUrl || !supabaseKey) {
+  // Safety guard: If Supabase env vars are missing/invalid/placeholder, don't crash the app.
+  // This allows the marketing page + login to work even without setup. No bogus auth calls.
+  if (!isValidSupabaseConfig(supabaseUrl, supabaseKey)) {
     return NextResponse.next({ request })
   }
 
@@ -16,8 +27,8 @@ export async function updateSession(request: NextRequest) {
   })
 
   const supabase = createServerClient(
-    supabaseUrl,
-    supabaseKey,
+    supabaseUrl!,
+    supabaseKey!,
     {
       cookies: {
         getAll() {

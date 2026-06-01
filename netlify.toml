@@ -2,17 +2,16 @@
   command = "npm run build"
   publish = ".next"
 
-[build.environment]
-  # Set ALL of these in Netlify dashboard → Site settings → Environment variables
-  # (Never commit real secrets)
-  NEXT_PUBLIC_SUPABASE_URL = ""
-  NEXT_PUBLIC_SUPABASE_ANON_KEY = ""
-  XAI_API_KEY = ""                    # Recommended for real Grok-4 reports
-  XAI_MODEL = "grok-4"
-  STRIPE_SECRET_KEY = ""
-  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY = ""
-  STRIPE_WEBHOOK_SECRET = ""
-  NEXT_PUBLIC_SITE_URL = "https://your-app.netlify.app"
+# IMPORTANT: Do NOT set NEXT_PUBLIC_* or secret env vars here.
+# All environment variables (including Supabase URL/anon key, XAI_API_KEY, Stripe, etc.)
+# MUST be set ONLY in the Netlify dashboard:
+#   Site settings → Environment variables
+# Setting them (even as "") in this [build.environment] section forces empty values
+# at build time and prevents dashboard variables from working correctly.
+# This was the root cause of the persistent "Supabase not configured" banner.
+# After changing dashboard vars, always force a fresh build (dummy commit or Clear cache + redeploy).
+
+# [build.environment] section removed for correct env var propagation from Netlify UI.
 
 # Official Netlify Next.js plugin (install via Netlify UI Plugins tab)
 [[plugins]]

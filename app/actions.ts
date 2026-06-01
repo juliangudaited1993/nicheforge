@@ -28,7 +28,10 @@ export async function generateAndSaveReport(
     // - Explicit demo login cookie (the "actual login" bypass)
     // - Old test mode cookie
     // - No Supabase configured
-    const isDemoMode = !process.env.NEXT_PUBLIC_SUPABASE_URL || isTestMode || hasDemoLogin;
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const isPlaceholder = (v?: string) => !v || v.trim()==='' || v.includes('your-project') || v.includes('placeholder') || v.includes('example.supabase') || v.includes('your-anon') || (v.length>0 && v.length<20);
+    const isDemoMode = !supabaseUrl || !supabaseKey || isPlaceholder(supabaseUrl) || isPlaceholder(supabaseKey) || isTestMode || hasDemoLogin;
 
     if (!user && !isDemoMode) {
       return { success: false, error: 'You must be logged in to generate reports.' };
