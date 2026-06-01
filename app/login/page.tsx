@@ -12,6 +12,10 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  // Detect if Supabase keys are missing at build time (common on fresh Netlify deploys)
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const isSupabaseConfigured = !!(supabaseUrl && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -45,6 +49,12 @@ export default function LoginPage() {
         <div className="card rounded-3xl p-8">
           <h1 className="text-2xl font-semibold tracking-tight mb-1">Welcome back</h1>
           <p className="text-[#a1a1aa] mb-6">Sign in to access your research reports.</p>
+
+          {!isSupabaseConfigured && (
+            <div className="mb-4 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-400">
+              Supabase is not configured yet. Login will not work. Use the <strong>Test Mode</strong> button below to access the full app.
+            </div>
+          )}
 
           <form onSubmit={handleLogin} className="space-y-4">
             <input

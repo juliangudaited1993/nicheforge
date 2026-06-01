@@ -11,6 +11,9 @@ export default function SignupPage() {
   const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const isSupabaseConfigured = !!(supabaseUrl && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -47,6 +50,12 @@ export default function SignupPage() {
         <div className="card rounded-3xl p-8">
           <h1 className="text-2xl font-semibold tracking-tight mb-1">Create your account</h1>
           <p className="text-[#a1a1aa] mb-6">Start generating professional research reports on any topic.</p>
+
+          {!isSupabaseConfigured && (
+            <div className="mb-4 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-400">
+              Supabase is not configured yet. Sign up will not work. Use the <strong>Test Mode</strong> button below to access the full app.
+            </div>
+          )}
 
           <form onSubmit={handleSignup} className="space-y-4">
             <input
