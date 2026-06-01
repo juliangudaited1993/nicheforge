@@ -1,9 +1,10 @@
 -- =====================================================
--- ResearchForge - COMPLETE SUPABASE SETUP
+-- ResearchForge - COMPLETE SUPABASE SETUP (Idempotent Version)
 -- Run this entire file in Supabase SQL Editor
+-- This version is safe to re-run multiple times
 -- =====================================================
 
--- STEP 1: Main Schema
+-- STEP 1: Main Schema (with safe re-runnable policies)
 -- =====================================================
 
 -- Enable UUID extension
@@ -31,9 +32,15 @@ create table if not exists public.reports (
 
 alter table public.reports enable row level security;
 
-create policy "Users can view their own reports" on public.reports for select using (auth.uid() = user_id);
-create policy "Users can insert their own reports" on public.reports for insert with check (auth.uid() = user_id);
-create policy "Users can delete their own reports" on public.reports for delete using (auth.uid() = user_id);
+-- Safe policy recreation (drop first, then create)
+DROP POLICY IF EXISTS "Users can view their own reports" ON public.reports;
+CREATE POLICY "Users can view their own reports" ON public.reports FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can insert their own reports" ON public.reports;
+CREATE POLICY "Users can insert their own reports" ON public.reports FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can delete their own reports" ON public.reports;
+CREATE POLICY "Users can delete their own reports" ON public.reports FOR DELETE USING (auth.uid() = user_id);
 
 create index if not exists reports_user_id_created_at_idx on public.reports (user_id, created_at desc);
 
@@ -51,7 +58,9 @@ create table if not exists public.trend_alerts (
 
 alter table public.trend_alerts enable row level security;
 
-create policy "Users can manage their own alerts" on public.trend_alerts using (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can manage their own alerts" ON public.trend_alerts;
+CREATE POLICY "Users can manage their own alerts" ON public.trend_alerts USING (auth.uid() = user_id);
+
 create index if not exists trend_alerts_user_id_idx on public.trend_alerts (user_id);
 
 -- PROFILES TABLE
@@ -75,8 +84,11 @@ create table if not exists public.profiles (
 
 alter table public.profiles enable row level security;
 
-create policy "Users can view own profile" on public.profiles for select using (auth.uid() = id);
-create policy "Users can update own profile" on public.profiles for update using (auth.uid() = id);
+DROP POLICY IF EXISTS "Users can view own profile" ON public.profiles;
+CREATE POLICY "Users can view own profile" ON public.profiles FOR SELECT USING (auth.uid() = id);
+
+DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
+CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
 
 -- Auto-create profile + 7-day trial on signup
 create or replace function public.handle_new_user()
@@ -122,10 +134,12 @@ create table if not exists public.subscriptions (
 );
 
 alter table public.subscriptions enable row level security;
-create policy "Users can view own subscriptions" on public.subscriptions for select using (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can view own subscriptions" ON public.subscriptions;
+CREATE POLICY "Users can view own subscriptions" ON public.subscriptions FOR SELECT USING (auth.uid() = user_id);
 
 -- =====================================================
--- STEP 2: Upgrade / Latest Columns
+-- STEP 2: Upgrade / Latest Columns (Safe to re-run)
 -- =====================================================
 
 ALTER TABLE public.profiles 
@@ -194,3 +208,5 @@ CREATE INDEX IF NOT EXISTS idx_reports_style_length
 -- =====================================================
 -- After running this, go to Authentication → URL Configuration
 -- and add your Netlify domain.
+-- 
+-- This file is now safe to re-run.
