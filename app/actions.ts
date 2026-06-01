@@ -24,14 +24,14 @@ export async function generateAndSaveReport(
     const isTestMode = cookieStore.get('researchforge-test-mode')?.value === 'true';
     const hasDemoLogin = cookieStore.get('researchforge-demo-login')?.value === 'true';
 
-    // Fully functional Demo Login + Test Mode: 
-    // - Explicit demo login cookie (the "actual login" bypass)
-    // - Old test mode cookie
-    // - No Supabase configured
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     const isPlaceholder = (v?: string) => !v || v.trim()==='' || v.includes('your-project') || v.includes('placeholder') || v.includes('example.supabase') || v.includes('your-anon') || (v.length>0 && v.length<20);
-    const isDemoMode = !supabaseUrl || !supabaseKey || isPlaceholder(supabaseUrl) || isPlaceholder(supabaseKey) || isTestMode || hasDemoLogin;
+    const isSupabaseMissing = !supabaseUrl || !supabaseKey || isPlaceholder(supabaseUrl) || isPlaceholder(supabaseKey);
+
+    // Real user from Supabase always gets real DB + quota path.
+    // Only treat as demo if there is NO real user AND (missing Supabase OR legacy demo cookie or test cookie).
+    const isDemoMode = !user && (isSupabaseMissing || isTestMode || hasDemoLogin);
 
     if (!user && !isDemoMode) {
       return { success: false, error: 'You must be logged in to generate reports.' };

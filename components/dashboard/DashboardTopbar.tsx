@@ -11,11 +11,19 @@ export default function DashboardTopbar({ user }: { user: any }) {
     const supabase = createClient();
     await supabase.auth.signOut();
 
-    // Clear demo login cookie if present (for the demo bypass login)
+    // Clear any demo/test cookies so next login can be real
     document.cookie = "researchforge-demo-login=; path=/; max-age=0";
     document.cookie = "researchforge-test-mode=; path=/; max-age=0";
 
     router.push('/');
+    router.refresh();
+  };
+
+  // Quick way for users stuck in demo mode to switch to real magic-link login
+  const handleSwitchToReal = () => {
+    document.cookie = "researchforge-demo-login=; path=/; max-age=0";
+    document.cookie = "researchforge-test-mode=; path=/; max-age=0";
+    router.push('/login');
     router.refresh();
   };
 
@@ -35,6 +43,16 @@ export default function DashboardTopbar({ user }: { user: any }) {
           <User className="h-4 w-4 text-[#f59e0b]" />
           <span className="hidden sm:inline">{user.email?.split('@')[0]}</span>
         </div>
+
+        {/* Easy escape hatch from demo mode to real magic-link login */}
+        {(user.email?.includes('demo@') || user.email?.includes('test@')) && (
+          <button
+            onClick={handleSwitchToReal}
+            className="text-xs text-[#f59e0b] hover:underline hidden md:block"
+          >
+            Switch to real account
+          </button>
+        )}
 
         <button
           onClick={handleSignOut}

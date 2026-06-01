@@ -107,7 +107,7 @@ export default function SignupPage() {
               disabled={loading}
               className="btn-primary w-full h-12 rounded-2xl font-semibold"
             >
-              {loading ? 'Creating account...' : 'Create Account & Send Link'}
+              {loading ? 'Creating account...' : 'Create Account & Send Magic Link'}
             </button>
           </form>
 
@@ -116,7 +116,7 @@ export default function SignupPage() {
             <Link href="/login" className="text-[#f59e0b] hover:underline">Log in</Link>
           </p>
 
-          {/* Demo Login - "Actual login" bypass without Supabase */}
+          {/* Demo is secondary now that Supabase is configured */}
           <div className="mt-6 pt-6 border-t border-[#27272a]">
             <button
               onClick={() => {
@@ -124,17 +124,15 @@ export default function SignupPage() {
                 document.cookie = "researchforge-test-mode=; path=/; max-age=0";
                 window.location.href = "/dashboard";
               }}
-              className="w-full flex items-center justify-center gap-2 rounded-2xl border border-[#f59e0b]/40 bg-[#f59e0b]/5 hover:bg-[#f59e0b]/10 px-6 py-3 text-sm font-semibold text-[#f59e0b] transition"
+              className="w-full flex items-center justify-center gap-2 rounded-2xl border border-[#27272a] bg-[#18181b] hover:bg-[#27272a] px-6 py-3 text-sm font-medium text-[#a1a1aa] transition"
             >
-              Login with Demo Account
-              <span className="text-xs opacity-70">(No Supabase • Real Grok + PDFs)</span>
+              Quick Demo Access (no real account)
             </button>
             <p className="text-center text-[10px] text-[#52525b] mt-2">
-              Creates a demo session. Full access to Grok research and PDF reports. Data saved locally.
+              Real Grok + PDF features • Data saved in browser only
             </p>
           </div>
 
-          {/* Legacy quick test mode */}
           <div className="mt-3 text-center">
             <button
               onClick={() => {

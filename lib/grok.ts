@@ -19,8 +19,11 @@ function getXaiClient(): OpenAI | null {
   return cachedClient;
 }
 
-// Highest model available to the user. Set XAI_MODEL in .env to override.
-const DEFAULT_MODEL = process.env.XAI_MODEL || 'grok-4'; // Use highest available (grok-4 or whatever is latest/heaviest)
+// Grok-4 Heavy is the recommended production model for deep research + PDF reports.
+// Set XAI_MODEL=grok-4 (or the latest heavy variant) in Netlify env vars to force it.
+// Leaving it blank defaults to grok-4 heavy when XAI_API_KEY is present.
+const HEAVY_MODEL = 'grok-4';
+const DEFAULT_MODEL = process.env.XAI_MODEL || HEAVY_MODEL;
 
 const SYSTEM_PROMPT = `You are ResearchForge AI — a world-class, general-purpose deep research analyst. You produce fully professional, high-end research reports on ANY topic (business strategy, legal/regulatory questions, medical/clinical topics, academic/scholarly subjects, personal life decisions, scientific, policy, or technical domains).
 
@@ -76,7 +79,7 @@ export async function generateGrokReport(
     depth === 'quick'
       ? 'Keep concise but high-signal.'
       : depth === 'deep'
-        ? `HEAVY MODE: Produce an extremely deep, comprehensive report adapted to ${researchStyle} style. ${styleInstructions[researchStyle as keyof typeof styleInstructions] || ''} ${lengthInstructions[reportLength as keyof typeof lengthInstructions] || ''}`
+        ? `GROK-4 HEAVY MODE: Produce an extremely deep, consultant/scholar-grade report using maximum reasoning. Adapted to ${researchStyle} style. ${styleInstructions[researchStyle as keyof typeof styleInstructions] || ''} ${lengthInstructions[reportLength as keyof typeof lengthInstructions] || ''}`
         : 'Balance depth with clarity. High signal-to-noise.';
 
   const userPrompt = `Generate a professional, high-end research report on the topic: "${topic}"

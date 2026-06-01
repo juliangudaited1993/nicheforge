@@ -57,26 +57,27 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Demo Login (explicit "actual login" bypass without Supabase)
+  // Demo Login cookie (legacy bypass for when Supabase wasn't configured yet)
   const hasDemoLogin = request.cookies.get('researchforge-demo-login')?.value === 'true'
 
   // Full Test Mode bypass for local assessment (no login required)
   const isTestMode = 
     process.env.NODE_ENV === 'development' ||
     request.cookies.get('researchforge-test-mode')?.value === 'true' ||
-    request.nextUrl.searchParams.get('test') === 'true' ||
-    hasDemoLogin
+    request.nextUrl.searchParams.get('test') === 'true'
 
-  // IMPORTANT: If demo login cookie is present, always bypass real Supabase auth
-  // even if Supabase keys are configured in Netlify.
-  if (hasDemoLogin || isTestMode) {
+  // Real user always takes priority over the old demo cookie.
+  // Only treat as demo mode if there is NO real Supabase user AND (demo cookie or test mode).
+  const forceDemo = !user && (hasDemoLogin || isTestMode)
+
+  if (forceDemo) {
     return supabaseResponse
   }
 
   // Protected routes (only when NOT in test/demo mode)
   if (
     !user &&
-    !hasDemoLogin &&
+    !forceDemo &&
     (request.nextUrl.pathname.startsWith('/dashboard') ||
       request.nextUrl.pathname.startsWith('/reports') ||
       request.nextUrl.pathname.startsWith('/settings') ||
@@ -87,9 +88,9 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // If user is logged in (or in demo login) and tries to access auth pages, redirect to dashboard
+  // If real user (or explicit demo when no real user) tries to access auth pages, redirect to dashboard
   if (
-    (user || hasDemoLogin) &&
+    (user || forceDemo) &&
     !isTestMode &&
     (request.nextUrl.pathname === '/login' ||
       request.nextUrl.pathname === '/signup')

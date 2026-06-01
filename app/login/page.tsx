@@ -107,7 +107,7 @@ export default function LoginPage() {
               disabled={loading}
               className="btn-primary w-full h-12 rounded-2xl font-semibold"
             >
-              {loading ? 'Sending magic link...' : 'Send Magic Link'}
+              {loading ? 'Sending magic link...' : 'Send Magic Link (Real Account)'}
             </button>
           </form>
 
@@ -116,22 +116,21 @@ export default function LoginPage() {
             <Link href="/signup" className="text-[#f59e0b] hover:underline">Sign up</Link>
           </p>
 
-          {/* Demo Login - Primary way to access when Supabase is not fully ready */}
+          {/* Demo access is now secondary — real magic link is the primary path for permanent accounts + DB history */}
           <div className="mt-6 pt-6 border-t border-[#27272a]">
-            <div className="mb-2 text-center text-xs uppercase tracking-widest text-[#f59e0b]">Recommended for testing</div>
+            <div className="mb-2 text-center text-xs uppercase tracking-widest text-[#52525b]">For quick testing only</div>
             <button
               onClick={() => {
-                // Set explicit demo login cookie (acts as a real logged-in session)
                 document.cookie = "researchforge-demo-login=true; path=/; max-age=86400";
                 document.cookie = "researchforge-test-mode=; path=/; max-age=0";
                 window.location.href = "/dashboard";
               }}
-              className="w-full flex items-center justify-center gap-2 rounded-2xl border-2 border-[#f59e0b] bg-[#f59e0b] hover:bg-[#fbbf24] active:bg-[#d97706] px-6 py-3.5 text-sm font-bold text-black transition shadow-lg"
+              className="w-full flex items-center justify-center gap-2 rounded-2xl border border-[#27272a] bg-[#18181b] hover:bg-[#27272a] px-6 py-3 text-sm font-medium text-[#a1a1aa] transition"
             >
-              Login with Demo Account (Recommended)
+              Quick Demo Access (no real account)
             </button>
-            <p className="text-center text-xs text-[#a1a1aa] mt-2">
-              Full access • Real Grok-4 (if XAI key set) • PDF customization • Data saved locally
+            <p className="text-center text-[10px] text-[#52525b] mt-2">
+              Uses real Grok + PDF features • Data saved in browser only
             </p>
 
             <div className="mt-3 text-center">
@@ -148,21 +147,8 @@ export default function LoginPage() {
           </div>
 
           <div className="mt-4 text-center text-[9px] text-[#52525b]">
-            Normal login requires full Supabase setup. Demo mode is the easiest way to test Grok + PDFs right now.<br />
-            <strong>Important:</strong> After adding any keys in Netlify (Supabase or XAI), you must force a new build — easiest is to edit any file, commit, and <code>git push</code>.
-          </div>
-
-          {/* Legacy Test Mode (keep for power users) */}
-          <div className="mt-3 text-center">
-            <button
-              onClick={() => {
-                document.cookie = "researchforge-test-mode=true; path=/; max-age=86400";
-                window.location.href = "/new-report?test=true";
-              }}
-              className="text-xs text-[#a1a1aa] hover:text-[#ededed] underline"
-            >
-              Or use quick Test Mode (no dashboard)
-            </button>
+            Real magic link login saves reports to your account, enforces quotas/trials, and gives permanent history.<br />
+            Demo mode is only for fast testing while you finish setup.
           </div>
         </div>
       </div>
