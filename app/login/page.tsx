@@ -52,7 +52,10 @@ export default function LoginPage() {
 
           {!isSupabaseConfigured && (
             <div className="mb-4 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-400">
-              Supabase is not configured yet. Login will not work. Use the <strong>Test Mode</strong> button below to access the full app.
+              <div className="font-medium mb-1">Supabase is not configured on this deployment yet.</div>
+              <div>
+                Add your <strong>Publishable key</strong> from Supabase as <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> in Netlify, then click <strong>Clear cache and redeploy</strong>.
+              </div>
             </div>
           )}
 
@@ -79,16 +82,18 @@ export default function LoginPage() {
             <Link href="/signup" className="text-[#f59e0b] hover:underline">Sign up</Link>
           </p>
 
-          {/* Easy Test Mode bypass for local testing */}
-          <div className="mt-6 pt-6 border-t border-[#27272a] text-center">
+          {/* Test Mode */}
+          <div className={`mt-6 pt-6 border-t border-[#27272a] text-center ${!isSupabaseConfigured ? 'bg-emerald-500/10 -mx-2 px-2 py-3 rounded-xl' : ''}`}>
             <button
               onClick={() => {
                 document.cookie = "researchforge-test-mode=true; path=/; max-age=86400";
                 window.location.href = "/new-report?test=true";
               }}
-              className="text-sm text-emerald-400 hover:text-emerald-300 underline"
+              className={`font-medium ${!isSupabaseConfigured ? 'text-emerald-400 hover:text-emerald-300' : 'text-sm text-emerald-400 hover:text-emerald-300 underline'}`}
             >
-              Skip login → Enter Full Test Mode (recommended for review)
+              {!isSupabaseConfigured 
+                ? "→ Skip login and use Full Test Mode (recommended right now)" 
+                : "Skip login → Enter Full Test Mode (recommended for review)"}
             </button>
           </div>
         </div>
