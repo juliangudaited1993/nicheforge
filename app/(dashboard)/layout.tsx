@@ -25,7 +25,8 @@ export default async function DashboardLayout({
   const isTestMode = process.env.NODE_ENV === 'development' || hasDemoLogin || isSupabaseMissing;
 
   // Only redirect if NOT in any demo/test mode
-  if (!user && !isTestMode && !hasDemoLogin) {
+  // Strongly prioritize the explicit demo login cookie
+  if (!user && !hasDemoLogin && !isTestMode) {
     redirect('/login');
   }
 

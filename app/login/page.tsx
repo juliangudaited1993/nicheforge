@@ -82,30 +82,39 @@ export default function LoginPage() {
             <Link href="/signup" className="text-[#f59e0b] hover:underline">Sign up</Link>
           </p>
 
-          {/* Demo Login - "Actual login" bypass without Supabase (user requested) */}
+          {/* Demo Login - Primary way to access when Supabase is not fully ready */}
           <div className="mt-6 pt-6 border-t border-[#27272a]">
+            <div className="mb-2 text-center text-xs uppercase tracking-widest text-[#f59e0b]">Recommended for testing</div>
             <button
               onClick={() => {
                 // Set explicit demo login cookie (acts as a real logged-in session)
                 document.cookie = "researchforge-demo-login=true; path=/; max-age=86400";
-                // Also clear any old test cookie for cleanliness
                 document.cookie = "researchforge-test-mode=; path=/; max-age=0";
                 window.location.href = "/dashboard";
               }}
-              className="w-full flex items-center justify-center gap-2 rounded-2xl border border-[#f59e0b]/40 bg-[#f59e0b]/5 hover:bg-[#f59e0b]/10 px-6 py-3 text-sm font-semibold text-[#f59e0b] transition"
+              className="w-full flex items-center justify-center gap-2 rounded-2xl border-2 border-[#f59e0b] bg-[#f59e0b] hover:bg-[#fbbf24] active:bg-[#d97706] px-6 py-3.5 text-sm font-bold text-black transition shadow-lg"
             >
-              Login with Demo Account
-              <span className="text-xs opacity-70">(No Supabase • Real Grok + PDFs)</span>
+              Login with Demo Account (Recommended)
             </button>
-            <p className="text-center text-[10px] text-[#52525b] mt-2">
-              Creates a demo session. Full access to Grok research and PDF reports. Data saved locally.
+            <p className="text-center text-xs text-[#a1a1aa] mt-2">
+              Full access • Real Grok-4 (if XAI key set) • PDF customization • Data saved locally
             </p>
-            <p className="text-center text-[10px] text-amber-400/70 mt-1">
-              When you're ready for real accounts: Set Supabase keys in Netlify + run schema.sql
-            </p>
-            <p className="text-center text-[9px] text-[#52525b] mt-1.5">
-              After changing env vars (like XAI_API_KEY), always do <strong>Deploys → Trigger deploy → "Clear cache and deploy site"</strong> (or push a dummy commit)
-            </p>
+
+            <div className="mt-3 text-center">
+              <button
+                onClick={() => {
+                  document.cookie = "researchforge-test-mode=true; path=/; max-age=86400";
+                  window.location.href = "/new-report?test=true";
+                }}
+                className="text-[10px] text-[#52525b] hover:text-[#a1a1aa] underline"
+              >
+                Or quick Test Mode (no dashboard)
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-4 text-center text-[9px] text-[#52525b]">
+            Normal login requires full Supabase setup. Demo mode is the easiest way to test Grok + PDFs right now.
           </div>
 
           {/* Legacy Test Mode (keep for power users) */}
