@@ -53,8 +53,14 @@ export default function LoginPage() {
           {!isSupabaseConfigured && (
             <div className="mb-4 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-400">
               <div className="font-medium mb-1">Supabase is not configured on this deployment yet.</div>
-              <div>
-                Add your <strong>Publishable key</strong> from Supabase as <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> in Netlify, then click <strong>Clear cache and redeploy</strong>.
+              <div className="mb-2">
+                This means the Supabase keys you added in Netlify are <strong>not yet in the current live build</strong>.
+              </div>
+              <div className="text-xs">
+                Common causes:<br />
+                • You added the keys but haven't triggered a new build since then<br />
+                • The keys were added to the wrong site or wrong deploy context<br />
+                • You need to do a full "Clear cache and deploy" (or dummy git push)
               </div>
             </div>
           )}
