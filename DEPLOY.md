@@ -179,6 +179,20 @@ In Netlify → **Site settings → Environment variables**, add these **exactly*
 
 After adding variables, **trigger a new deploy** (or use "Clear cache and redeploy").
 
+**If you don't see the "Clear cache and redeploy" option:**
+
+This is common in the current Netlify UI. Here are the ways to force a clean build:
+
+1. In the **Deploys** tab, click the **"Trigger deploy"** button.  
+   Look for a small dropdown arrow or three dots (⋯) next to it — the option is often hidden there as **"Clear cache and deploy site"**.
+
+2. If you still don't see it:
+   - Make any tiny change in the code (e.g. add a space in README.md or add a comment somewhere).
+   - Commit and `git push`.
+   - This forces Netlify to do a completely fresh build with your new environment variables.
+
+3. Alternative: Go to **Site configuration → Build & deploy → Continuous deployment** and look for any "Deploy site" or "Redeploy" buttons there.
+
 ## Step 4: Configure Stripe Webhooks (for production)
 1. In Stripe Dashboard → Developers → Webhooks.
 2. Add endpoint: `https://your-netlify-site.netlify.app/api/webhooks/stripe`

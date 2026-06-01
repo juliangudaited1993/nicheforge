@@ -103,6 +103,9 @@ export default function LoginPage() {
             <p className="text-center text-[10px] text-amber-400/70 mt-1">
               When you're ready for real accounts: Set Supabase keys in Netlify + run schema.sql
             </p>
+            <p className="text-center text-[9px] text-[#52525b] mt-1.5">
+              After changing env vars (like XAI_API_KEY), always do <strong>Deploys → Trigger deploy → "Clear cache and deploy site"</strong> (or push a dummy commit)
+            </p>
           </div>
 
           {/* Legacy Test Mode (keep for power users) */}
