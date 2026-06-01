@@ -1,6 +1,6 @@
 'use client';
 
-import { NicheReport } from '@/lib/types';
+import { NicheReport } from '@/lib/types'; // alias for ResearchReport
 import { Download, RefreshCw, FileText } from 'lucide-react';
 import { generateProfessionalPDF } from '@/lib/generateProfessionalPDF';
 import { toast } from 'sonner';

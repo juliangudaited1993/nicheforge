@@ -1,8 +1,8 @@
 #!/bin/bash
-# NicheForge AI - One-command prep for Netlify deploy
+# ResearchForge - One-command prep for Netlify deploy
 # Run this locally on your machine (not in this sandbox)
 
-echo "=== NicheForge AI Netlify Deploy Prep ==="
+echo "=== ResearchForge Netlify Deploy Prep ==="
 
 # 1. Ensure dependencies
 npm install

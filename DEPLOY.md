@@ -35,7 +35,7 @@ Connect your GitHub repo to your existing Netlify site (or create a new one).
 5. Scroll down until you see the section called **Continuous deployment**.
 6. Click the button that says **"Link repository"** or **"Connect to Git provider"**.
 7. Choose **GitHub**.
-8. Authorize Netlify if asked, then select your GitHub repository that contains the NicheForge code.
+8. Authorize Netlify if asked, then select your GitHub repository that contains the ResearchForge code.
 9. After selecting the repo, Netlify will show **Build settings**. Make sure these are set:
    - **Build command**: `npm run build`
    - **Publish directory**: `.next`
@@ -65,7 +65,7 @@ This almost always means one of these two things:
 5. Click **"Revoke"** to remove access.
 6. Go back to Netlify and click "Link repository" / "Connect to Git provider" again.
 7. When GitHub asks for permissions:
-   - Make sure you're logged into the **correct GitHub account** (the one that owns your NicheForge repo).
+   - Make sure you're logged into the **correct GitHub account** (the one that owns your ResearchForge repo).
    - If your repo is in an **Organization**, scroll down and click **"Grant"** next to that organization.
    - Choose **"All repositories"** (recommended) instead of selecting specific ones.
 
@@ -91,7 +91,7 @@ This is extremely common, especially if you use both Windows and Linux.
 
 **Most likely causes right now:**
 - You are looking at GitHub from the **wrong account** (you have multiple GitHub accounts).
-- Your actual NicheForge code lives on **Windows**, but you're checking things on Linux (or vice versa).
+- Your actual ResearchForge code lives on **Windows**, but you're checking things on Linux (or vice versa).
 - The repo was never pushed from the machine you're currently on.
 - Netlify only has limited access (common when you pick "Only select repositories" during authorization).
 
@@ -200,7 +200,7 @@ GitHub only shows the token **once** when you create it. If you lost it:
 1. Go to GitHub → click your profile picture → **Settings**
 2. Left sidebar → **Developer settings** → **Personal access tokens** → **Tokens (classic)**
 3. Click **"Generate new token"** → **"Generate new token (classic)"**
-4. Name it something like "NicheForge Deploy"
+4. Name it something like "ResearchForge Deploy"
 5. Check the **repo** scope
 6. Click **"Generate token"**
 7. **Copy it immediately** — you won't see it again
@@ -213,7 +213,7 @@ After deploy, test these flows in order. The app should be fully functional for 
 1. **Demo Mode (No Login Needed)**
    - Visit the live site.
    - Go to `/new-report`
-   - Enter any niche and select **Deep** → Generate.
+   - Enter any research topic and select **Deep** → Generate.
    - You must see the full 10-agent live scrolling conversation (with company logos, research links, back-and-forth dialogue, ~1m40s duration).
    - On completion, the big "DOWNLOAD COMPLETE PDF REPORT" hero button appears.
    - Download the PDF — it must be professional (15-40 pages, agent log, financial projections, sources, etc.).

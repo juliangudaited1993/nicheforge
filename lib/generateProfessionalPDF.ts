@@ -1,5 +1,5 @@
 import jsPDF from 'jspdf';
-import { NicheReport, PDFCustomizationOptions } from './types';
+import { NicheReport, PDFCustomizationOptions } from './types'; // NicheReport = ResearchReport alias
 
 const DEFAULT_CUSTOMIZATION: PDFCustomizationOptions = {
   style: 'corporate',

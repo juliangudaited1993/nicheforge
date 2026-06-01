@@ -75,7 +75,7 @@ The full flow (Dashboard → New Report with live 10-agent visualization → Det
 - Controllable depth (Quick / Standard / Deep) and focus areas
 - Save reports to browser (localStorage)
 - One-click Markdown export
-- Clickable related niches to chain research
+- Clickable related topics to chain research
 - Fully responsive
 
 ## Full SaaS Features (Current)
@@ -186,7 +186,7 @@ MIT — build whatever you want with it.
 
 ---
 
-*Created via `grok new NicheForge` • April 2026*
+*ResearchForge — General AI Research Platform • 2026*
 
 
 ## Deploy on Vercel

@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { generateAndSaveReport, getTrialStatus } from '@/app/actions';
-import { NicheReport } from '@/lib/types'; // alias for ResearchReport - full generalization in progress
+import { NicheReport } from '@/lib/types'; // alias for ResearchReport (legacy compat)
 import dynamic from 'next/dynamic';
 
 const ReportViewer = dynamic(() => import('@/components/ReportViewer'), {

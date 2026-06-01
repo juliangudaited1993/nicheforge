@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { X, Download, Eye } from 'lucide-react';
-import { NicheReport, PDFCustomizationOptions } from '@/lib/types';
+import { NicheReport, PDFCustomizationOptions } from '@/lib/types'; // NicheReport alias = ResearchReport
 import { generateProfessionalPDF } from '@/lib/generateProfessionalPDF';
 
 interface PDFCustomizerProps {

@@ -1,5 +1,5 @@
 #!/bin/bash
-# ResearchForge / NicheForge - Easy GitHub Push Script
+# ResearchForge - Easy GitHub Push Script
 # This script helps you push the project to GitHub with proper authentication.
 
 echo "=== ResearchForge GitHub Push Helper ==="
@@ -45,4 +45,4 @@ git push -u origin main
 echo ""
 echo "=== Push completed ==="
 echo "If successful, your code is now on GitHub."
-echo "Next: Go to Netlify → NicheForgeDemo → Site configuration → Build & deploy → Link the repository."
+echo "Next: Go to Netlify → your ResearchForge site → Deploys → Trigger deploy."

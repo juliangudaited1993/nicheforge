@@ -19,6 +19,7 @@ interface Competitor {
   gap: string;
 }
 
+// Local demo report shape for the public homepage demo (kept separate from main ResearchReport type)
 interface NicheReport {
   id: string;
   niche: string;
@@ -257,7 +258,7 @@ ${(report.competitors || []).map(c => `### ${c.name}\n- Strength: ${c.strength}\
 ## Action Playbook
 ${(report.playbook || []).map((p, i) => `${i + 1}. ${p}`).join('\n')}
 
-## Related Niches to Explore
+## Related Topics to Explore
 ${(report.related || []).map(r => `- ${r}`).join('\n')}
 
 ---
@@ -400,7 +401,7 @@ ${(report.related || []).map(r => `- ${r}`).join('\n')}
           {[
             { icon: Search, title: "1. Seed the idea", desc: "Type any market, hobby, problem, or audience. We support long-tail and emerging categories." },
             { icon: BarChart3, title: "2. Multi-angle synthesis", desc: "We cross-reference evidence, stakeholder perspectives, risks, and practical implications in one pass." },
-            { icon: Target, title: "3. Get validated playbook", desc: "Receive a scored report + concrete 5-step action plan you can execute this week." },
+            { icon: Target, title: "3. Get scored research + action plan", desc: "Receive a professional report with metrics, insights, sources, and a concrete action plan." },
           ].map((step, i) => (
             <div key={i} className="card p-8 rounded-2xl">
               <step.icon className="w-8 h-8 text-[#f59e0b] mb-5" />
@@ -411,13 +412,13 @@ ${(report.related || []).map(r => `- ${r}`).join('\n')}
         </div>
       </div>
 
-      {/* THE FORGE — Core Tool */}
+      {/* RESEARCH FORGE — Core Tool */}
       <div id="forge" className="bg-[#121214] border-y border-[#27272a] py-16">
         <div className="max-w-6xl mx-auto px-6">
           <div className="flex items-end justify-between mb-8">
             <div>
               <div className="uppercase tracking-[2px] text-xs text-[#f59e0b]">THE RESEARCH ENGINE</div>
-              <h2 className="text-4xl font-semibold tracking-tighter">Forge a Niche</h2>
+              <h2 className="text-4xl font-semibold tracking-tighter">Forge Research</h2>
             </div>
             <div className="hidden md:block text-sm text-[#a1a1aa]">
               Results are deterministic per seed + settings for reproducibility
@@ -429,7 +430,7 @@ ${(report.related || []).map(r => `- ${r}`).join('\n')}
             <div className="grid lg:grid-cols-5 gap-8">
               {/* Input */}
               <div className="lg:col-span-3">
-                <label className="block text-sm font-medium mb-2 text-[#a1a1aa]">NICHE SEED OR KEYWORD</label>
+                <label className="block text-sm font-medium mb-2 text-[#a1a1aa]">RESEARCH TOPIC OR KEYWORD</label>
                 <input
                   type="text"
                   value={seedInput}
@@ -633,7 +634,7 @@ ${(report.related || []).map(r => `- ${r}`).join('\n')}
                   {/* Related + Actions */}
                   <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between pt-4 border-t border-[#27272a]">
                     <div>
-                      <div className="text-xs text-[#f59e0b] mb-2 tracking-wider">EXPLORE RELATED NICHES</div>
+                      <div className="text-xs text-[#f59e0b] mb-2 tracking-wider">EXPLORE RELATED TOPICS</div>
                       <div className="flex flex-wrap gap-2">
                         {(currentReport.related || []).map((r, i) => (
                           <button key={i} onClick={() => loadExample(r)} className="chip flex items-center gap-1 hover:bg-[#f59e0b] hover:text-black active:scale-95 transition-all">
@@ -690,7 +691,7 @@ ${(report.related || []).map(r => `- ${r}`).join('\n')}
         </div>
       </footer>
 
-      {/* Saved Niches Drawer */}
+      {/* Saved Reports Drawer */}
       {isSavedOpen && (
         <div className="fixed inset-0 z-[100] flex" onClick={() => setIsSavedOpen(false)}>
           <div className="absolute inset-0 bg-black/70" />
@@ -700,7 +701,7 @@ ${(report.related || []).map(r => `- ${r}`).join('\n')}
           >
             <div className="flex items-center justify-between mb-6">
               <div>
-                <div className="font-semibold text-xl tracking-tight">My Forged Niches</div>
+                <div className="font-semibold text-xl tracking-tight">My Saved Research</div>
                 <div className="text-xs text-[#a1a1aa]">{savedReports.length} saved</div>
               </div>
               <button onClick={() => setIsSavedOpen(false)} className="p-2 hover:bg-[#1a1a1d] rounded-full">

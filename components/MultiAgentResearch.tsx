@@ -252,7 +252,7 @@ export default function MultiAgentResearch({ topic, depth, researchStyle = 'corp
       },
       {
         agent: researchTeam[4]?.name || "Forecaster",
-        message: `Additional signal: two major ${style} publications and one professional association have all published pieces touching on this exact area in the last 30 days. The conversation is moving from niche to mainstream within the field. Timing is strong.`,
+        message: `Additional signal: two major ${style} publications and one professional association have all published pieces touching on this exact area in the last 30 days. The conversation is moving from specialized discussion to broad mainstream attention within the field. Timing is strong.`,
         timestamp: "01:23",
         sources: [
           makeSource('substack', `https://substack.com/search?q=${encodeURIComponent(topic)}`, 'Recent field commentary'),

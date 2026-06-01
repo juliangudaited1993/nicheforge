@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import { NicheReport } from './types';
+import { NicheReport } from './types'; // alias for ResearchReport
 
 let cachedClient: OpenAI | null = null;
 
