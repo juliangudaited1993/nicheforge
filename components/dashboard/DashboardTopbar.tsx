@@ -10,6 +10,11 @@ export default function DashboardTopbar({ user }: { user: any }) {
   const handleSignOut = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
+
+    // Clear demo login cookie if present (for the demo bypass login)
+    document.cookie = "researchforge-demo-login=; path=/; max-age=0";
+    document.cookie = "researchforge-test-mode=; path=/; max-age=0";
+
     router.push('/');
     router.refresh();
   };

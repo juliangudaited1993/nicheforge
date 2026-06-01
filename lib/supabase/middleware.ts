@@ -46,20 +46,25 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
+  // Demo Login (explicit "actual login" bypass without Supabase)
+  const hasDemoLogin = request.cookies.get('researchforge-demo-login')?.value === 'true'
+
   // Full Test Mode bypass for local assessment (no login required)
   const isTestMode = 
     process.env.NODE_ENV === 'development' ||
     request.cookies.get('researchforge-test-mode')?.value === 'true' ||
-    request.nextUrl.searchParams.get('test') === 'true'
+    request.nextUrl.searchParams.get('test') === 'true' ||
+    hasDemoLogin
 
-  if (isTestMode) {
-    // Allow everything in test mode
+  if (isTestMode || hasDemoLogin) {
+    // Allow everything — treat as logged in for demo purposes
     return supabaseResponse
   }
 
-  // Protected routes (only when NOT in test mode)
+  // Protected routes (only when NOT in test/demo mode)
   if (
     !user &&
+    !hasDemoLogin &&
     (request.nextUrl.pathname.startsWith('/dashboard') ||
       request.nextUrl.pathname.startsWith('/reports') ||
       request.nextUrl.pathname.startsWith('/settings') ||
@@ -70,9 +75,9 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // If user is logged in and tries to access auth pages, redirect to dashboard (skip in test mode)
+  // If user is logged in (or in demo login) and tries to access auth pages, redirect to dashboard
   if (
-    user &&
+    (user || hasDemoLogin) &&
     !isTestMode &&
     (request.nextUrl.pathname === '/login' ||
       request.nextUrl.pathname === '/signup')

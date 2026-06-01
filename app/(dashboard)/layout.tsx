@@ -15,21 +15,33 @@ export default async function DashboardLayout({
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isDemoMode = !process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const isTestMode = process.env.NODE_ENV === 'development' || isDemoMode;
+  // Check for explicit Demo Login (the "actual login" bypass the user requested)
+  // This is set by the Demo Login button on the login page
+  const cookieStore = await import('next/headers').then(m => m.cookies());
+  const hasDemoLogin = cookieStore.get('researchforge-demo-login')?.value === 'true';
 
-  // Only redirect if NOT in demo/test mode
-  if (!user && !isTestMode) {
+  const isSupabaseMissing = !process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const isDemoMode = isSupabaseMissing || hasDemoLogin;
+  const isTestMode = process.env.NODE_ENV === 'development' || hasDemoLogin || isSupabaseMissing;
+
+  // Only redirect if NOT in any demo/test mode
+  if (!user && !isTestMode && !hasDemoLogin) {
     redirect('/login');
   }
 
-  const displayUser = user || { email: 'test@researchforge.ai', id: 'test-user-001' };
+  // Demo user when using explicit demo login or when Supabase is missing
+  const displayUser = user || { 
+    email: hasDemoLogin ? 'demo@researchforge.test' : 'test@researchforge.ai', 
+    id: hasDemoLogin ? 'demo-user-001' : 'test-user-001' 
+  };
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#0a0a0b]">
-      {(isDemoMode || isTestMode) && (
+      {(hasDemoLogin || isDemoMode || isTestMode) && (
         <div className="absolute top-0 left-0 right-0 z-50 bg-emerald-500/90 text-black text-center py-1 text-sm font-medium">
-          TEST MODE — Full access enabled • No login required • All features (research flow, agents, PDF, history) work locally
+          {hasDemoLogin 
+            ? "DEMO ACCOUNT — Logged in as demo@researchforge.test • Real Grok reports + full PDF features • Data saved locally" 
+            : "TEST MODE — Full access enabled • No login required • All features (research flow, agents, PDF, history) work locally"}
         </div>
       )}
       <DashboardSidebar user={displayUser} />

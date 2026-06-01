@@ -22,10 +22,13 @@ export async function generateAndSaveReport(
 
     const cookieStore = await cookies();
     const isTestMode = cookieStore.get('researchforge-test-mode')?.value === 'true';
+    const hasDemoLogin = cookieStore.get('researchforge-demo-login')?.value === 'true';
 
-    // Fully functional Test Mode: always treat as demo when the test cookie is present,
-    // or when no Supabase is configured at all.
-    const isDemoMode = !process.env.NEXT_PUBLIC_SUPABASE_URL || isTestMode;
+    // Fully functional Demo Login + Test Mode: 
+    // - Explicit demo login cookie (the "actual login" bypass)
+    // - Old test mode cookie
+    // - No Supabase configured
+    const isDemoMode = !process.env.NEXT_PUBLIC_SUPABASE_URL || isTestMode || hasDemoLogin;
 
     if (!user && !isDemoMode) {
       return { success: false, error: 'You must be logged in to generate reports.' };

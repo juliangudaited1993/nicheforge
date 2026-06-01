@@ -91,18 +91,34 @@ export default function SignupPage() {
             <Link href="/login" className="text-[#f59e0b] hover:underline">Log in</Link>
           </p>
 
-          {/* Test Mode */}
-          <div className={`mt-6 pt-6 border-t border-[#27272a] text-center ${!isSupabaseConfigured ? 'bg-emerald-500/10 -mx-2 px-2 py-3 rounded-xl' : ''}`}>
+          {/* Demo Login - "Actual login" bypass without Supabase */}
+          <div className="mt-6 pt-6 border-t border-[#27272a]">
+            <button
+              onClick={() => {
+                document.cookie = "researchforge-demo-login=true; path=/; max-age=86400";
+                document.cookie = "researchforge-test-mode=; path=/; max-age=0";
+                window.location.href = "/dashboard";
+              }}
+              className="w-full flex items-center justify-center gap-2 rounded-2xl border border-[#f59e0b]/40 bg-[#f59e0b]/5 hover:bg-[#f59e0b]/10 px-6 py-3 text-sm font-semibold text-[#f59e0b] transition"
+            >
+              Login with Demo Account
+              <span className="text-xs opacity-70">(No Supabase • Real Grok + PDFs)</span>
+            </button>
+            <p className="text-center text-[10px] text-[#52525b] mt-2">
+              Creates a demo session. Full access to Grok research and PDF reports. Data saved locally.
+            </p>
+          </div>
+
+          {/* Legacy quick test mode */}
+          <div className="mt-3 text-center">
             <button
               onClick={() => {
                 document.cookie = "researchforge-test-mode=true; path=/; max-age=86400";
                 window.location.href = "/new-report?test=true";
               }}
-              className={`font-medium ${!isSupabaseConfigured ? 'text-emerald-400 hover:text-emerald-300' : 'text-sm text-emerald-400 hover:text-emerald-300 underline'}`}
+              className="text-xs text-[#a1a1aa] hover:text-[#ededed] underline"
             >
-              {!isSupabaseConfigured 
-                ? "→ Skip signup and use Full Test Mode (recommended right now)" 
-                : "Skip signup → Enter Full Test Mode (recommended for review)"}
+              Or use quick Test Mode
             </button>
           </div>
         </div>
