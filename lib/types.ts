@@ -64,6 +64,10 @@ export interface ResearchReport {
     reasoning: string;
     sources_used: string[];
   }>;
+
+  // Internal flag used to show whether the report came from real Grok or local fallback
+  // (only used in demo / testing mode)
+  _source?: 'grok' | 'local' | 'grok-error';
 }
 
 // Keep alias for backward compatibility in some places
