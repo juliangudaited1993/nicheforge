@@ -1,0 +1,34 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  # Set ALL of these in Netlify dashboard → Site settings → Environment variables
+  # (Never commit real secrets)
+  NEXT_PUBLIC_SUPABASE_URL = ""
+  NEXT_PUBLIC_SUPABASE_ANON_KEY = ""
+  XAI_API_KEY = ""                    # Recommended for real Grok-4 reports
+  XAI_MODEL = "grok-4"
+  STRIPE_SECRET_KEY = ""
+  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY = ""
+  STRIPE_WEBHOOK_SECRET = ""
+  NEXT_PUBLIC_SITE_URL = "https://your-app.netlify.app"
+
+# Official Netlify Next.js plugin (install via Netlify UI Plugins tab)
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Production security headers
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+# API routing (handled gracefully by the Next.js plugin)
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200

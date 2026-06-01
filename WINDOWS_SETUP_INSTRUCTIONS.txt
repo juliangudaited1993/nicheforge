@@ -1,0 +1,149 @@
+NicheForge - How to Get the Project on Your Windows Machine
+
+IMPORTANT: The project was developed in a Linux environment at /home/julia/nicheforge.
+It does NOT automatically exist on your Windows PC.
+
+CURRENT SITUATION:
+- This Linux copy has the full code.
+- There is currently NO GitHub remote connected.
+- Your real development needs to happen on Windows for easy Netlify deployment.
+
+STEP 1: Push the code from here (Linux) to GitHub
+
+1. Create a new repository on GitHub (if you haven't already).
+   - Go to github.com and create a new empty repo called "nicheforge" (do NOT initialize it with README).
+
+2. **IMPORTANT: GitHub no longer accepts passwords.** You must use a Personal Access Token.
+
+   How to create a Personal Access Token:
+   - Go to GitHub → click your profile picture (top right) → Settings
+   - Left menu: Developer settings → Personal access tokens → Tokens (classic)
+   - Click "Generate new token" → "Generate new token (classic)"
+   - Give it a name like "NicheForge Deploy"
+   - Select the **repo** scope (this is the most important one)
+   - Click "Generate token"
+   - **Copy the token immediately** (you won't see it again)
+
+3. In the Linux terminal (where you are now), run these commands one by one:
+
+   cd /home/julia/nicheforge
+
+   git remote add origin https://github.com/YOUR_USERNAME/nicheforge.git
+
+   git branch -M main
+
+   git push -u origin main
+
+   (Replace YOUR_USERNAME with your actual GitHub username)
+
+4. When it asks for username: type your GitHub username
+   When it asks for password: **paste the Personal Access Token** you just created (it will look like it's not typing — that's normal).
+
+5. After pushing successfully, the code will be on GitHub.
+
+---
+
+**I lost my Personal Access Token - How to make a new one**
+
+This is very common. Tokens are only shown **once** when you create them.
+
+To create a new one:
+
+1. Go to GitHub in your browser.
+2. Click your profile picture (top right) → **Settings**.
+3. On the left menu, scroll down and click **Developer settings**.
+4. Click **Personal access tokens** → **Tokens (classic)**.
+5. You will see your old token (it will say "Never used" or show the date).
+6. Click **"Generate new token"** → **"Generate new token (classic)"**.
+7. Give it a name (example: "NicheForge Deploy 2").
+8. Under **Select scopes**, check the box for **repo**.
+9. Scroll down and click **"Generate token"**.
+10. **Copy the new token right away** (you won't be able to see it again).
+
+Then go back to your terminal and run the push command again. When it asks for the password, paste this new token.
+
+STEP 2: Clone it on your Windows machine
+
+1. On Windows, open Command Prompt or PowerShell.
+
+2. Go to a folder where you want the project (example: Downloads):
+
+   cd C:\Users\julia\Downloads
+
+3. Clone the repo:
+
+   git clone https://github.com/YOUR_USERNAME/nicheforge.git
+
+4. Then go into the folder:
+
+   cd nicheforge
+
+5. Now you can run:
+
+   git remote -v
+
+   (This should show your GitHub link)
+
+6. You can now follow the Netlify deployment steps from this machine.
+
+ALTERNATIVE (if you don't want to use git push from Linux):
+
+- Manually copy the entire /home/julia/nicheforge folder to your Windows machine using any file transfer method (USB, cloud drive, etc.).
+- Then initialize git on Windows and push from there.
+
+Once the code is on your Windows machine with a proper GitHub remote, connecting it to Netlify will be much easier.
+
+---
+
+EASIEST WAY (Recommended):
+
+I have created an improved helper script called `push-to-github.sh`.
+
+**Run these commands exactly in order:**
+
+```bash
+cd /home/julia/nicheforge
+```
+
+```bash
+chmod +x push-to-github.sh
+```
+
+```bash
+./push-to-github.sh
+```
+
+The script will now:
+- Ask you for your GitHub username
+- Automatically set up the remote
+- Guide you through the push
+
+When Git asks for the password, paste your **Personal Access Token** (it won't show on screen).
+
+---
+
+TROUBLESHOOTING: "remote origin already exists"
+
+This happens if you ran the command with the placeholder "YOUR_USERNAME" earlier.
+
+Fix it by running these commands one by one:
+
+```bash
+git remote remove origin
+```
+
+```bash
+git remote add origin https://github.com/YOUR_ACTUAL_GITHUB_USERNAME/nicheforge.git
+```
+
+```bash
+git branch -M main
+```
+
+```bash
+git push -u origin main
+```
+
+(Replace YOUR_ACTUAL_GITHUB_USERNAME with your real GitHub username)
+
+When it asks for password, paste your Personal Access Token again.

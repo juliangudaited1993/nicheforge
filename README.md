@@ -1,8 +1,12 @@
-# NicheForge
+# ResearchForge
 
-**AI-powered niche research and validation platform.** Go from a vague idea to a scored, actionable market opportunity in minutes.
+**Professional General Research Platform**
 
-Built with Next.js 16 + TypeScript + Tailwind as the initial scaffold from `grok new NicheForge`.
+Deep AI-powered research reports on *any topic* — business, legal, medical, academic, personal, policy, scientific, or technical.
+
+Customizable style • Variable length • Professional PDF • Visible multi-agent collaboration • Detailed sources & charts.
+
+Built as `grok build --full-saas` on top of the initial Next.js 16 scaffold.
 
 ## What it does
 
@@ -26,6 +30,44 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+## Deployment to Netlify (Production Ready)
+
+### 1. Prerequisites
+- Supabase project with the schema from `supabase/schema.sql` applied (including the updated profiles table with trial fields).
+- (Recommended) xAI API key for real Grok-4 reports.
+- Stripe keys (for paid plans).
+
+### 2. Netlify Setup
+1. Connect your GitHub repo to Netlify.
+2. Build settings (usually auto-detected):
+   - Build command: `npm run build`
+   - Publish directory: `.next`
+3. **Add the official plugin**:
+   - Go to Site settings → Plugins → Search for "@netlify/plugin-nextjs" and install it.
+4. Add **Environment Variables** (Site settings → Environment variables):
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `XAI_API_KEY` (strongly recommended)
+   - `XAI_MODEL=grok-4`
+   - Stripe keys
+   - `NEXT_PUBLIC_SITE_URL` = your Netlify URL (e.g. https://your-app.netlify.app)
+5. Deploy.
+
+The app includes:
+- Proper `netlify.toml` with security headers and plugin recommendation.
+- `public/_redirects` as a safe fallback.
+- Full demo mode when Supabase envs are missing.
+- 7-day trial system that works immediately on real signups.
+
+### 3. Post-Deploy
+- Configure Supabase Auth URLs to include your Netlify domain.
+- Set up Stripe webhook endpoint to `https://your-site.netlify.app/api/webhooks/stripe`.
+- (Optional) Set up a cron or Edge Function later for real trend alert emails.
+
+The full flow (Dashboard → New Report with live 10-agent visualization → Detailed PDF → Saved Reports with trial enforcement) has been internally validated for production.
+
+**→ For complete deployment instructions, see [DEPLOY.md](./DEPLOY.md)**
+
 ## Key Features (MVP)
 
 - Beautiful dark "forge" aesthetic with amber accents
@@ -36,33 +78,90 @@ Open [http://localhost:3000](http://localhost:3000).
 - Clickable related niches to chain research
 - Fully responsive
 
-## Future / Production Ideas
+## Full SaaS Features (Current)
 
-- Real-time web research via xAI / OpenAI / Perplexity (see `.env.example`)
-- User accounts + saved reports in DB (Supabase / PlanetScale)
-- PDF export, shareable public links
-- Competitor deep-dive pages + historical trend charts
-- Team workspaces + comment threads on reports
-- API for bulk niche research
+- **Authentication** — Supabase Auth (magic links)
+- **Real Grok-powered reports** — `/new-report` uses xAI Grok-3 via OpenAI-compatible SDK
+- **Saved Reports** — Full database-backed history with detail views
+- **Dashboard** — Clean professional overview with recent activity
+- **Trend Alerts** — Users can create keyword monitors (email delivery ready for later)
+- **Hybrid Pricing** — Free tier (5 reports/mo + 7-day trial) / Pro ($49/mo + one-time $297-$497 setup fee)
+- **Settings + Quota** — Foundation for usage limits and profiles
 
-## Tech
+## Tech Stack
 
-- Next.js 16 (App Router, Turbopack)
-- TypeScript + Tailwind v4
-- lucide-react icons
-- Zero external API calls in current build (pure client)
+- Next.js 16 App Router + TypeScript + Tailwind
+- Supabase (Auth + Postgres + RLS)
+- xAI Grok (via OpenAI SDK)
+- Stripe (checkout + webhooks prepared)
+- Sonner toasts + Framer Motion ready
 
-## Project Structure
+## Project Structure (SaaS)
 
 ```
-nicheforge/
-├── app/
-│   ├── layout.tsx     # Metadata + dark forge theme
-│   ├── page.tsx       # The entire interactive SPA + research engine
-│   └── globals.css    # Custom design tokens + animations
-├── .env.example
-└── README.md
+app/
+├── (dashboard)/          # Protected SaaS area
+│   ├── dashboard/
+│   ├── reports/
+│   ├── new-report/       # Real Grok generation + save
+│   ├── alerts/
+│   ├── pricing/
+│   └── settings/
+├── login/
+├── signup/
+├── actions.ts            # Server actions (generate + save)
+└── layout.tsx
+
+lib/
+├── grok.ts               # Grok/xAI report generator
+├── supabase/
+├── types.ts
+└── actions/
 ```
+
+## Quick Start (Local Development)
+
+1. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+2. **Set up Supabase**
+   - Create a new project at supabase.com
+   - Copy `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - Also copy the **Service Role Key** (for webhooks)
+   - Run the SQL in `supabase/schema.sql` in the SQL Editor
+
+3. **Get Grok API key**
+   - Go to https://console.x.ai
+   - Create an API key → `XAI_API_KEY`
+
+4. **Stripe (optional but recommended)**
+   - Create products + prices in Stripe
+   - Add `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, and price IDs
+
+5. **Create `.env.local`**
+   ```bash
+   cp .env.example .env.local
+   # fill in the values
+   ```
+
+6. **Run the app**
+   ```bash
+   npm run dev
+   ```
+
+Visit http://localhost:3000 → Sign up → Go to Dashboard → Generate real reports with Grok.
+
+## Deploy to Netlify (Recommended)
+
+1. Push to GitHub
+2. Import project in Netlify
+3. Add all environment variables from `.env.local` in Netlify dashboard
+4. Add a Stripe webhook endpoint pointing to `https://your-site.netlify.app/api/webhooks/stripe`
+5. Deploy
+
+The app is optimized for Netlify (server actions + API routes work via Netlify Functions).
 
 ## Scripts
 

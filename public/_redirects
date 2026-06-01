@@ -1,0 +1,8 @@
+# Netlify _redirects for NicheForge AI (Next.js)
+# The @netlify/plugin-nextjs usually handles this, but this provides a safe fallback.
+
+# API routes
+/api/*  /.netlify/functions/:splat  200
+
+# All other routes - let Next.js handle (SPA fallback is managed by the plugin)
+# Do not add a blanket /* -> /index.html here as it can break Next.js routing.
