@@ -214,6 +214,21 @@ This is common in the current Netlify UI. Here are the ways to force a clean bui
 
 3. Alternative: Go to **Site configuration → Build & deploy → Continuous deployment** and look for any "Deploy site" or "Redeploy" buttons there.
 
+**How to check which environment variables were actually used in a specific deploy:**
+
+This is the best way to verify if your Supabase or XAI keys made it into a build:
+
+1. Go to the **Deploys** tab.
+2. Click on a specific deploy (preferably the most recent successful one).
+3. On the deploy detail page, scroll down past the main build log.
+4. Look for a section titled **"Build details"**, **"Deploy details"**, or **"Build information"** (often on the right side or as expandable cards).
+5. Inside that section, look for **"Environment"** or **"Build environment"**.
+6. Alternatively, in the raw build log, search (Ctrl+F) for:
+   - `Resolved config`
+   - `environment:`
+
+If the variables are listed there, they were available during that build. If the Supabase keys are missing from that list, they were not present when that version was built.
+
 ## Step 4: Configure Stripe Webhooks (for production)
 1. In Stripe Dashboard → Developers → Webhooks.
 2. Add endpoint: `https://your-netlify-site.netlify.app/api/webhooks/stripe`

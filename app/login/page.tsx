@@ -60,7 +60,8 @@ export default function LoginPage() {
                 Common causes:<br />
                 • You added the keys but haven't triggered a new build since then<br />
                 • The keys were added to the wrong site or wrong deploy context<br />
-                • You need to do a full "Clear cache and deploy" (or dummy git push)
+                • You need to do a full "Clear cache and deploy" (or dummy git push)<br /><br />
+                <strong>To verify:</strong> In Netlify, go to a specific deploy → look for "Build details" or "Environment" section (or search the log for "Resolved config").
               </div>
             </div>
           )}
