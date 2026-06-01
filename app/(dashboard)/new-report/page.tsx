@@ -245,7 +245,6 @@ export default function NewReportPage() {
 
                         setGeneratedReport(report);
                         const isDemo = report.id?.startsWith('demo-');
-                        const usedRealGrok = (report as any)._source === 'grok';
 
                         // In Test/Demo mode, persist the normalized version to localStorage
                         if (isDemo) {
@@ -308,12 +307,12 @@ export default function NewReportPage() {
 
             <div className="mt-4 text-xs text-[#52525b]">Includes every insight from the live multi-agent conversation above • Print-ready • Professional formatting</div>
 
-            {usedRealGrok && (
+            {generatedReport && (generatedReport as any)._source === 'grok' && (
               <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-xs text-emerald-400 font-medium border border-emerald-500/20">
                 ✓ Powered by real Grok-4 (XAI key active)
               </div>
             )}
-            {!usedRealGrok && generatedReport && (
+            {generatedReport && (generatedReport as any)._source !== 'grok' && (
               <div className="mt-3 text-xs text-amber-400">
                 Using local simulator — XAI_API_KEY not detected in the current Netlify build.<br />
                 <span className="text-[10px]">After adding the key, do a fresh deploy (dummy commit or Clear cache).</span>
