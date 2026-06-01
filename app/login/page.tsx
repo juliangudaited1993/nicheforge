@@ -114,7 +114,8 @@ export default function LoginPage() {
           </div>
 
           <div className="mt-4 text-center text-[9px] text-[#52525b]">
-            Normal login requires full Supabase setup. Demo mode is the easiest way to test Grok + PDFs right now.
+            Normal login requires full Supabase setup. Demo mode is the easiest way to test Grok + PDFs right now.<br />
+            <strong>Important:</strong> After adding any keys in Netlify (Supabase or XAI), you must force a new build — easiest is to edit any file, commit, and <code>git push</code>.
           </div>
 
           {/* Legacy Test Mode (keep for power users) */}
