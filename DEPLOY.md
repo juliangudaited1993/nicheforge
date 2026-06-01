@@ -16,11 +16,32 @@ This is the definitive guide. Follow it exactly to deploy and test.
 - (Recommended) xAI API key for real Grok-4 reports
 - Stripe account (for paid plans; test mode works for launch)
 
-## Step 1: Prepare Supabase
-1. Go to your Supabase project → SQL Editor.
-2. Run the entire contents of `supabase/schema.sql` (this includes the 7-day trial fields and RLS policies).
-3. In Supabase → Authentication → URL Configuration:
-   - Add your future Netlify URL (e.g. `https://your-app.netlify.app`) to **Site URL** and **Redirect URLs**.
+## Step 1: Prepare Supabase (Required for real logins + saved reports)
+
+If you are currently using "Demo Login" mode and want real user accounts + reports saved in the database, follow these steps exactly:
+
+1. Go to your Supabase project dashboard.
+2. Click **SQL Editor** in the left menu.
+3. Copy the **entire contents** of the file `supabase/schema.sql` from your project and paste + run it in the SQL Editor.
+   - This creates the tables (`reports`, `profiles`, `trend_alerts`), enables RLS, and sets up the automatic 7-day trial for new users.
+
+4. (Recommended) Also run `supabase/upgrade-researchforge.sql` in the same SQL Editor (for the latest pricing tiers and columns).
+
+5. Go to **Authentication → URL Configuration** in the left menu and set:
+   - **Site URL**: `https://your-netlify-site.netlify.app`
+   - **Redirect URLs**: Add `https://your-netlify-site.netlify.app/**` (or at minimum `https://your-netlify-site.netlify.app/dashboard`)
+
+6. Go to **Authentication → Providers**:
+   - Make sure **Email** is enabled.
+   - Under Email templates, you can customize the magic link email if you want (optional for now).
+
+7. In Netlify, add these two environment variables (Site configuration → Environment variables):
+   - `NEXT_PUBLIC_SUPABASE_URL` = (from Supabase → Settings → API → Project URL)
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` = (from Supabase → Settings → API → **Publishable key** / anon key)
+
+8. After adding the keys in Netlify, go to **Deploys** tab and do **"Clear cache and deploy site"** (or push a dummy commit).
+
+Once this is done, normal "Send Magic Link" login on your site will start working, and reports will save to the database instead of localStorage. The "Demo Login" button will still be available as a fallback.
 
 ## Step 2: Deploy to Netlify
 
