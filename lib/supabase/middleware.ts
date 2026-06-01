@@ -56,8 +56,9 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.searchParams.get('test') === 'true' ||
     hasDemoLogin
 
-  if (isTestMode || hasDemoLogin) {
-    // Allow everything — treat as logged in for demo purposes
+  // IMPORTANT: If demo login cookie is present, always bypass real Supabase auth
+  // even if Supabase keys are configured in Netlify.
+  if (hasDemoLogin || isTestMode) {
     return supabaseResponse
   }
 
