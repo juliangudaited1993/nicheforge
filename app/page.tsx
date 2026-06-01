@@ -27,7 +27,7 @@ interface NicheReport {
   summary: string;
   metrics: Metric[];
   insights: string[];
-  competitors: Competitor[];
+  competitors?: Competitor[];
   playbook: string[];
   related: string[];
   generatedAt: string;
@@ -246,19 +246,19 @@ export default function ResearchForge() {
 ${report.summary}
 
 ## Key Metrics
-${report.metrics.map(m => `- **${m.label}:** ${m.value}/100 — ${m.note}`).join('\n')}
+${(report.metrics || []).map(m => `- **${m.label}:** ${m.value}/100 — ${m.note}`).join('\n')}
 
 ## Insights
-${report.insights.map(i => `- ${i}`).join('\n')}
+${(report.insights || []).map(i => `- ${i}`).join('\n')}
 
 ## Competitor Landscape
-${report.competitors.map(c => `### ${c.name}\n- Strength: ${c.strength}\n- Gap: ${c.gap}`).join('\n\n')}
+${(report.competitors || []).map(c => `### ${c.name}\n- Strength: ${c.strength}\n- Gap: ${c.gap}`).join('\n\n')}
 
 ## Action Playbook
-${report.playbook.map((p, i) => `${i + 1}. ${p}`).join('\n')}
+${(report.playbook || []).map((p, i) => `${i + 1}. ${p}`).join('\n')}
 
 ## Related Niches to Explore
-${report.related.map(r => `- ${r}`).join('\n')}
+${(report.related || []).map(r => `- ${r}`).join('\n')}
 
 ---
 *ResearchForge — Professional AI Research Platform*
@@ -278,7 +278,7 @@ ${report.related.map(r => `- ${r}`).join('\n')}
 
   const copyReport = (report: NicheReport) => {
     const title = report.topic || report.niche;
-    const text = `${title} — Score: ${report.score}/100\n\n${report.summary}\n\nTop metrics: ${report.metrics.map(m => `${m.label} ${m.value}`).join(', ')}`;
+    const text = `${title} — Score: ${report.score}/100\n\n${report.summary}\n\nTop metrics: ${(report.metrics || []).map(m => `${m.label} ${m.value}`).join(', ')}`;
     navigator.clipboard.writeText(text);
     // Toast would be nice but simple alert for MVP
     const orig = (event?.target as HTMLElement)?.textContent;
@@ -570,7 +570,7 @@ ${report.related.map(r => `- ${r}`).join('\n')}
                   <div>
                     <div className="uppercase text-xs tracking-[2px] text-[#f59e0b] mb-4">VALIDATION METRICS</div>
                     <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-5">
-                      {currentReport.metrics.map((m, idx) => (
+                      {(currentReport.metrics || []).map((m, idx) => (
                         <div key={idx} className="bg-[#121214] rounded-2xl p-5 border border-[#27272a]">
                           <div className="text-sm text-[#a1a1aa] mb-1.5">{m.label}</div>
                           <div className="flex items-baseline gap-1 mb-3">
@@ -589,7 +589,7 @@ ${report.related.map(r => `- ${r}`).join('\n')}
                     <div className="lg:col-span-3">
                       <div className="uppercase text-xs tracking-[2px] text-[#f59e0b] mb-4">KEY INSIGHTS</div>
                       <ul className="space-y-3 text-[15px]">
-                        {currentReport.insights.map((insight, i) => (
+                        {(currentReport.insights || []).map((insight, i) => (
                           <li key={i} className="flex gap-3">
                             <span className="text-[#f59e0b] mt-1.5">•</span> 
                             <span>{insight}</span>
@@ -601,7 +601,7 @@ ${report.related.map(r => `- ${r}`).join('\n')}
                     <div className="lg:col-span-2">
                       <div className="uppercase text-xs tracking-[2px] text-[#f59e0b] mb-4">COMPETITOR SNAPSHOT</div>
                       <div className="space-y-3">
-                        {currentReport.competitors.map((c, i) => (
+                        {(currentReport.competitors || []).map((c, i) => (
                           <div key={i} className="bg-[#121214] border border-[#27272a] rounded-2xl px-5 py-4 text-sm">
                             <div className="font-medium mb-1">{c.name}</div>
                             <div className="text-[#a1a1aa] text-xs leading-snug">
@@ -621,7 +621,7 @@ ${report.related.map(r => `- ${r}`).join('\n')}
                       <div className="text-xs text-[#a1a1aa]">Prioritized for early traction</div>
                     </div>
                     <ol className="grid md:grid-cols-2 gap-x-8 gap-y-3 text-[15px]">
-                      {currentReport.playbook.map((step, i) => (
+                      {(currentReport.playbook || []).map((step, i) => (
                         <li key={i} className="flex gap-3 bg-[#121214] p-4 rounded-2xl border border-[#27272a]">
                           <span className="font-mono text-[#f59e0b] w-5 shrink-0 mt-px">{i + 1}.</span>
                           <span>{step}</span>
@@ -635,7 +635,7 @@ ${report.related.map(r => `- ${r}`).join('\n')}
                     <div>
                       <div className="text-xs text-[#f59e0b] mb-2 tracking-wider">EXPLORE RELATED NICHES</div>
                       <div className="flex flex-wrap gap-2">
-                        {currentReport.related.map((r, i) => (
+                        {(currentReport.related || []).map((r, i) => (
                           <button key={i} onClick={() => loadExample(r)} className="chip flex items-center gap-1 hover:bg-[#f59e0b] hover:text-black active:scale-95 transition-all">
                             {r} <Plus className="w-3 h-3" />
                           </button>

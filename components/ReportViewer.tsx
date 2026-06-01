@@ -22,19 +22,19 @@ export default function ReportViewer({ report, onReforge }: Props) {
 ${report.summary}
 
 ## Validation Metrics
-${report.metrics.map(m => `- **${m.label}:** ${m.value}/100 — ${m.note}`).join('\n')}
+${(report.metrics || []).map(m => `- **${m.label}:** ${m.value}/100 — ${m.note}`).join('\n')}
 
 ## Key Insights
-${report.insights.map(i => `- ${i}`).join('\n')}
+${(report.insights || []).map(i => `- ${i}`).join('\n')}
 
 ## Competitor Landscape
 ${(report.competitors || []).map(c => `### ${c.name}\n- **Strength:** ${c.strength}\n- **Gap:** ${c.gap}`).join('\n\n')}
 
 ## Action Playbook
-${report.playbook.map((step, i) => `${i + 1}. ${step}`).join('\n')}
+${(report.playbook || []).map((step, i) => `${i + 1}. ${step}`).join('\n')}
 
 ## Related Topics
-${report.related.map(r => `- ${r}`).join('\n')}
+${(report.related || []).map(r => `- ${r}`).join('\n')}
 `;
 
     const blob = new Blob([md], { type: 'text/markdown' });
@@ -88,7 +88,7 @@ ${report.related.map(r => `- ${r}`).join('\n')}
         <div>
           <div className="uppercase tracking-widest text-xs text-[#f59e0b] mb-4">VALIDATION METRICS</div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            {report.metrics.map((m, i) => (
+            {(report.metrics || []).map((m, i) => (
               <div key={i} className="bg-[#121214] rounded-2xl p-5 border border-[#27272a]">
                 <div className="text-sm text-[#a1a1aa]">{m.label}</div>
                 <div className="mt-2 flex items-baseline gap-1">
@@ -109,7 +109,7 @@ ${report.related.map(r => `- ${r}`).join('\n')}
           <div className="lg:col-span-3">
             <div className="uppercase tracking-widest text-xs text-[#f59e0b] mb-3">KEY INSIGHTS</div>
             <ul className="space-y-3">
-              {report.insights.map((insight, i) => (
+              {(report.insights || []).map((insight, i) => (
                 <li key={i} className="flex gap-3 text-[15px]">
                   <span className="text-[#f59e0b] mt-1.5">•</span>
                   <span>{insight}</span>
@@ -120,7 +120,7 @@ ${report.related.map(r => `- ${r}`).join('\n')}
           <div className="lg:col-span-2">
             <div className="uppercase tracking-widest text-xs text-[#f59e0b] mb-3">COMPETITOR GAPS</div>
             <div className="space-y-3">
-              {report.competitors.map((c, i) => (
+              {(report.competitors || []).map((c, i) => (
                 <div key={i} className="bg-[#121214] border border-[#27272a] rounded-2xl p-4 text-sm">
                   <div className="font-medium mb-1.5">{c.name}</div>
                   <div className="text-[#a1a1aa] text-xs leading-relaxed">
@@ -137,7 +137,7 @@ ${report.related.map(r => `- ${r}`).join('\n')}
         <div>
           <div className="uppercase tracking-widest text-xs text-[#f59e0b] mb-3">ACTION PLAYBOOK</div>
           <ol className="grid md:grid-cols-2 gap-3 text-[15px]">
-            {report.playbook.map((step, i) => (
+            {(report.playbook || []).map((step, i) => (
               <li key={i} className="bg-[#121214] p-4 rounded-2xl border border-[#27272a] flex gap-3">
                 <span className="font-mono text-[#f59e0b] w-5 shrink-0">{i + 1}.</span>
                 <span>{step}</span>

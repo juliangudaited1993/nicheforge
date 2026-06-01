@@ -166,7 +166,7 @@ export function generateProfessionalPDF(
   const barHeight = 14;
   const barMaxWidth = contentWidth - 90;
 
-  report.metrics.forEach((metric, index) => {
+  (report.metrics || []).forEach((metric, index) => {
     if (y > pageHeight - 50) {
       doc.addPage();
       y = 25;
@@ -211,7 +211,7 @@ export function generateProfessionalPDF(
   doc.text("STRATEGIC INSIGHTS", margin, y);
   y += 10;
 
-  report.insights.forEach((insight, i) => {
+  (report.insights || []).forEach((insight, i) => {
     if (y > pageHeight - 30) {
       doc.addPage();
       y = 25;
@@ -235,7 +235,7 @@ export function generateProfessionalPDF(
   doc.text("COMPETITIVE LANDSCAPE", margin, y);
   y += 10;
 
-  report.competitors.forEach((comp, i) => {
+  (report.competitors || []).forEach((comp, i) => {
     if (y > pageHeight - 45) {
       doc.addPage();
       y = 25;
@@ -294,7 +294,7 @@ export function generateProfessionalPDF(
     y += frameLines.length * 4 + 8;
   }
 
-  report.playbook.forEach((step, i) => {
+  (report.playbook || []).forEach((step, i) => {
     if (y > pageHeight - 30) {
       doc.addPage();
       y = 25;
@@ -353,9 +353,9 @@ export function generateProfessionalPDF(
       doc.setTextColor(80, 80, 80);
       doc.text(`Pricing: ${comp.pricing}`, margin + 5, y);
       y += 5;
-      doc.text(`Strengths: ${comp.strengths.join(', ')}`, margin + 5, y);
+      doc.text(`Strengths: ${(comp.strengths || []).join(', ')}`, margin + 5, y);
       y += 5;
-      doc.text(`Weaknesses: ${comp.weaknesses.join(', ')}`, margin + 5, y);
+      doc.text(`Weaknesses: ${(comp.weaknesses || []).join(', ')}`, margin + 5, y);
       y += 10;
     });
   }
@@ -382,7 +382,7 @@ export function generateProfessionalPDF(
 
     doc.text("Key Assumptions:", margin, y);
     y += 6;
-    fp.key_assumptions.forEach(assumption => {
+    (fp.key_assumptions || []).forEach(assumption => {
       doc.text(`• ${assumption}`, margin + 5, y);
       y += 5;
     });
@@ -460,7 +460,7 @@ export function generateProfessionalPDF(
       doc.text(reasoningLines, margin + 5, y);
       y += reasoningLines.length * 5 + 3;
 
-      if (log.sources_used.length > 0) {
+      if ((log.sources_used || []).length > 0) {
         doc.text(`Sources: ${log.sources_used.join(', ')}`, margin + 5, y);
         y += 6;
       }
