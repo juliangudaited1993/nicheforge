@@ -199,3 +199,4 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 # Netlify rebuild forced on Mon Jun  1 08:18:54 -03 2026
 # Force rebuild - Mon Jun  1 08:56:02 -03 2026
 # Force clean rebuild - Mon Jun  1 09:00:49 -03 2026
+# Force clean rebuild with cache clear - Mon Jun  1 09:27:21 -03 2026
