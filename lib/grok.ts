@@ -101,7 +101,9 @@ Return ONLY the JSON object.`;
 
   // If no API key → use high-quality local fallback (demo mode)
   if (!client) {
-    return generateLocalFallbackReport(topic, depth, researchStyle, reportLength);
+    console.warn('[ResearchForge] No XAI_API_KEY found in environment. Falling back to local simulator.');
+    const fallback = generateLocalFallbackReport(topic, depth, researchStyle, reportLength);
+    return { ...fallback, _source: 'local' as const };
   }
 
   try {
@@ -142,11 +144,13 @@ Return ONLY the JSON object.`;
       risk_assessment: parsed.risk_assessment,
       detailed_sources: parsed.detailed_sources,
       agent_collaboration_log: parsed.agent_collaboration_log || [],
+      _source: 'grok' as const,
     };
 
   } catch (error) {
-    console.error('Grok generation failed:', error);
-    return generateLocalFallbackReport(topic, depth, researchStyle, reportLength);
+    console.error('[ResearchForge] Grok API call failed. Falling back to local simulator.', error);
+    const fallback = generateLocalFallbackReport(topic, depth, researchStyle, reportLength);
+    return { ...fallback, _source: 'grok-error' as const };
   }
 }
 
@@ -340,5 +344,6 @@ function generateLocalFallbackReport(
     competitors,
     playbook,
     related,
+    _source: 'local' as const,
   };
 }

@@ -245,6 +245,7 @@ export default function NewReportPage() {
 
                         setGeneratedReport(report);
                         const isDemo = report.id?.startsWith('demo-');
+                        const usedRealGrok = (report as any)._source === 'grok';
 
                         // In Test/Demo mode, persist the normalized version to localStorage
                         if (isDemo) {
@@ -306,6 +307,13 @@ export default function NewReportPage() {
             </button>
 
             <div className="mt-4 text-xs text-[#52525b]">Includes every insight from the live multi-agent conversation above • Print-ready • Professional formatting</div>
+
+            {usedRealGrok && (
+              <div className="mt-3 text-xs text-emerald-400 font-medium">✓ Powered by real Grok-4 (XAI key detected)</div>
+            )}
+            {!usedRealGrok && generatedReport && (
+              <div className="mt-3 text-xs text-amber-400">Using high-quality local research simulator (XAI key not detected in this build)</div>
+            )}
           </div>
 
           <div className="flex items-center justify-between">
